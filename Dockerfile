@@ -1,16 +1,16 @@
 # Etapa de construcción
-FROM node:20-alpine
+FROM node:20-alpine as builder
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
 RUN npm run build
 
-# Instalar un servidor ligero para servir la aplicación
-RUN npm install -g serve
-
-# Exponer el puerto
-EXPOSE 3000
-
-# Comando para ejecutar la aplicación - modificado para escuchar en todas las interfaces
-CMD ["serve", "-s", "dist", "-l", "tcp://0.0.0.0:3000"]
+# Etapa de producción
+FROM nginx:alpine
+# Copiar los archivos construidos
+COPY --from=builder /app/dist /usr/share/nginx/html
+# Copiar configuración personalizada de nginx si es necesaria
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
