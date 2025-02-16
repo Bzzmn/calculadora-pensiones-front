@@ -5,7 +5,9 @@ import { sessionService } from './sessionService';
 export const calculatePension = async (formData: FormData): Promise<ApiResponse> => {
   try {
     const sessionId = sessionService.getOrCreateSessionId();
-    
+
+    console.log('URL de cálculo:', ENDPOINTS.calculatePension);
+
     const payload = {
       sessionId,
       name: formData.nombre,
@@ -19,6 +21,7 @@ export const calculatePension = async (formData: FormData): Promise<ApiResponse>
       nivel_estudios: formData.nivelEstudios
     };
 
+    console.log('Endpoint usado:', ENDPOINTS.calculatePension);
     console.log('Payload enviado:', payload);
 
     const response = await fetch(ENDPOINTS.calculatePension, {
@@ -33,6 +36,7 @@ export const calculatePension = async (formData: FormData): Promise<ApiResponse>
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
       console.error('Error response:', errorData);
+      console.error('URL usada:', ENDPOINTS.calculatePension);
       throw new Error(errorData?.message || 'Error al calcular la pensión');
     }
 

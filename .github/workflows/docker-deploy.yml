@@ -9,6 +9,7 @@ on:
 env:
   DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/calculadora-pension
   NODE_VERSION: '20'
+  VITE_API_BASE_URL: 'https://api.mipension.thefullstack.digital'
 
 jobs:
   test-and-build:
@@ -26,8 +27,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run linting
+        run: npm run lint
+
       - name: Build application
         run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ env.VITE_API_BASE_URL }}
 
   build-and-push:
     needs: test-and-build
@@ -53,6 +59,8 @@ jobs:
           tags: |
             ${{ env.DOCKER_IMAGE }}:latest
             ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          build-args: |
+            VITE_API_BASE_URL=${{ env.VITE_API_BASE_URL }}
           cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:latest
           cache-to: type=inline
 

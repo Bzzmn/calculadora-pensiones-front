@@ -6,12 +6,10 @@ WORKDIR /app
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
-# Verificar que la variable está presente
-RUN echo "API URL: $VITE_API_BASE_URL"
-
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
+
 RUN npm run build
 
 # Etapa de producción
