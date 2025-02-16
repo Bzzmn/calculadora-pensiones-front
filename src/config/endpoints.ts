@@ -1,11 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-console.log('API_BASE_URL from env:', import.meta.env.VITE_API_BASE_URL);
-console.log('Final API_BASE_URL:', API_BASE_URL);
-
-if (!API_BASE_URL) {
-  console.warn('VITE_API_BASE_URL not found, using default URL');
-  throw new Error('VITE_API_BASE_URL is required');
+declare global {
+  interface Window {
+    env?: {
+      VITE_API_BASE_URL: string;
+    };
+  }
 }
+
+const API_BASE_URL = window.env?.VITE_API_BASE_URL || 'http://localhost:3000/api';
+console.log('API_BASE_URL from runtime:', API_BASE_URL);
 
 export const ENDPOINTS = {
   calculatePension: `${API_BASE_URL}/calculate_pension`,
