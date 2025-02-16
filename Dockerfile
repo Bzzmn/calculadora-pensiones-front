@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
+# Asegúrate de que se use el entorno de producción
+ENV NODE_ENV=production
 RUN npm run build
 
 # Etapa de producción
