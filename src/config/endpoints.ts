@@ -1,12 +1,4 @@
-declare global {
-  interface Window {
-    env?: {
-      VITE_API_BASE_URL: string;
-    };
-  }
-}
-
-const API_BASE_URL = window.env?.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 console.log('API_BASE_URL from runtime:', API_BASE_URL);
 
 export const ENDPOINTS = {

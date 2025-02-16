@@ -11,8 +11,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'https://calculadorapension.thefullstack.digital',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        changeOrigin: true
       },
     },
   },
