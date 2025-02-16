@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://calculadorapension.thefullstack.digital/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export const ENDPOINTS = {
   calculatePension: `${API_BASE_URL}/calculate_pension`,
