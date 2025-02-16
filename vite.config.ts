@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       exclude: ['lucide-react'],
     },
+    define: {
+      // Asegura que las variables de entorno estén disponibles en el cliente
+      'process.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL),
+      'process.env.VITE_N8N_WEBHOOK_URL': JSON.stringify(env.VITE_N8N_WEBHOOK_URL),
+    },
     server: {
       proxy: {
         '/api': {

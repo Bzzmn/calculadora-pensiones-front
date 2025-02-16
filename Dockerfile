@@ -4,8 +4,14 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
-# Asegúrate de que se use el entorno de producción
-ENV NODE_ENV=production
+
+# Configura las variables de entorno para la construcción
+ARG VITE_API_BASE_URL
+ARG VITE_N8N_WEBHOOK_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_N8N_WEBHOOK_URL=${VITE_N8N_WEBHOOK_URL}
+
+# Construye la aplicación
 RUN npm run build
 
 # Etapa de producción
