@@ -197,6 +197,24 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
     }
   }, [resultsLoaded, chatInitialized]);
 
+  // Efecto para controlar el scroll del body
+  useEffect(() => {
+    if (isOpen) {
+      // Guardar la posición actual del scroll
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+    } else {
+      // Restaurar la posición del scroll
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+  }, [isOpen]);
+
   return (
     <div className="fixed bottom-4 right-4 z-40">
       {!isOpen ? (
@@ -219,17 +237,21 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
           </animated.div>
         </div>
       ) : (
-        <div className="fixed inset-0 sm:relative sm:inset-auto flex items-end sm:items-center justify-center">
+        <div 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/20"
+          onClick={() => setIsOpen(false)}
+        >
           <div
             className="bg-gray-900 rounded-lg shadow-xl 
             w-[calc(100vw-2rem)] sm:w-[360px] md:w-[400px] lg:w-[450px] 
-            h-[calc(100dvh-2rem)] sm:h-[500px] md:h-[600px] lg:h-[650px] 
-            max-h-[calc(100dvh-2rem)] sm:max-h-[600px] md:max-h-[700px] lg:max-h-[800px]
-            flex flex-col overflow-hidden
-            mx-4 mb-4 sm:mx-0 sm:mb-0
-            sm:fixed sm:bottom-4 sm:right-4"
+            h-[calc(100dvh-4rem)] sm:h-[500px] md:h-[600px] lg:h-[650px] 
+            max-h-[calc(95dvh)] sm:max-h-[95dvh] md:max-h-[95dvh] lg:max-h-[95dvh]
+            flex flex-col
+            absolute bottom-4 right-4 sm:right-4 sm:bottom-4
+            mx-4 sm:mx-0 mb-0"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-5 bg-gray-800/50">
+            <div className="flex justify-between items-center p-5 bg-gray-800/50 shrink-0">
               <div className="flex items-center space-x-3">
                 <img
                   src={avatarSrc}
@@ -254,7 +276,13 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
               </button>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto bg-gray-800/50 space-y-4">
+            <div className="flex-1 p-4 overflow-y-auto bg-gray-800/50 space-y-4 min-h-0
+              [&::-webkit-scrollbar]:w-2
+              [&::-webkit-scrollbar-track]:bg-gray-800/40
+              [&::-webkit-scrollbar-thumb]:bg-gray-600
+              [&::-webkit-scrollbar-thumb]:rounded-full
+              hover:[&::-webkit-scrollbar-thumb]:bg-gray-500"
+            >
               {transitions((styles, item, _, index) => (
                 <animated.div style={styles}>
                   <div
@@ -332,7 +360,7 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
 
             <form
               onSubmit={handleSendMessage}
-              className="p-4 border-t border-gray-700 bg-gray-800"
+              className="p-4 border-t border-gray-700 bg-gray-800 shrink-0"
             >
               <div className="flex space-x-2">
                 <input
