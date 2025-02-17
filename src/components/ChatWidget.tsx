@@ -30,6 +30,7 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
   const [isInitializing, setIsInitializing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showNotification, setShowNotification] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const agentName = chatService.getAgentName(formData?.genero || "Masculino");
   const avatarSrc = getAgentAvatar(formData?.genero || "Masculino");
@@ -270,15 +271,32 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center px-6 py-4 bg-gray-800/50 shrink-0">
-              <div className="flex items-center space-x-3">
-                <img
-                  src={avatarSrc}
-                  alt={agentName}
-                  className="w-8 h-8 md:w-10 md:h-10 rounded-full"
-                />
-                <span className="text-gray-100 font-medium text-sm sm:text-base md:text-lg">
-                  {agentName}
-                </span>
+              <div className="flex items-center space-x-4">
+                <div className="flex flex-col items-center">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAvatarModal(true);
+                    }}
+                    className="group relative rounded-full overflow-hidden transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900
+                    p-0.5 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500"
+                  >
+                    <div className="relative rounded-full overflow-hidden">
+                      <img
+                        src={avatarSrc}
+                        alt={agentName}
+                        className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </button>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-gray-100 font-medium text-sm sm:text-base md:text-lg">
+                    {agentName}
+                  </span>
+                  <span className="text-xs text-gray-400">Agente Virtual</span>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <button
@@ -440,6 +458,35 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
                 </h3>
                 <p className="text-indigo-300 mt-1">Asistente Virtual</p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para ver la imagen del agente */}
+      {showAvatarModal && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80"
+          onClick={() => setShowAvatarModal(false)}
+        >
+          <div 
+            className="relative max-w-md max-h-[90vh] p-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowAvatarModal(false)}
+              className="absolute -top-10 right-0 p-2 text-white hover:text-gray-300 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img
+              src={avatarSrc}
+              alt={agentName}
+              className="w-64 h-64 sm:w-72 sm:h-72 object-cover rounded-full mx-auto"
+            />
+            <div className="text-center mt-4">
+              <h3 className="text-white text-xl font-medium">{agentName}</h3>
+              <p className="text-gray-300 mt-1">Agente Virtual</p>
             </div>
           </div>
         </div>
