@@ -5,7 +5,7 @@ import { Message } from '../types/chat';
 import { chatService } from '../services/chatService';
 import { useSessionStore } from '../stores/sessionStore';
 import { useTransition, animated, config } from '@react-spring/web';
-// import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatWidgetProps {
   formData: PensionFormData;
@@ -186,25 +186,6 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
     trail: 100 // Delay between each message animation
   });
 
-  const chatTransition = useTransition(isOpen, {
-    from: { 
-      opacity: 0, 
-      transform: 'translateY(100%) scale(0.8)',
-    },
-    enter: { 
-      opacity: 1, 
-      transform: 'translateY(0%) scale(1)',
-    },
-    leave: { 
-      opacity: 0, 
-      transform: 'translateY(100%) scale(0.8)',
-    },
-    config: {
-      ...config.default,
-      tension: 280,
-      friction: 20,
-    }
-  });
 
   const avatarModalTransition = useTransition(showLargeAvatar, {
     from: { opacity: 0, transform: 'scale(0.95)' },
@@ -219,9 +200,6 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
     setShowLargeAvatar(true);
   };
 
-  const renderMessageContent = (message: Message) => {
-    return message.content;
-  };
 
   useEffect(() => {
     console.log('Estado actual de mensajes:', chatMessages);
@@ -269,25 +247,53 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
               </button>
             </div>
             <div className="flex-1 p-4 overflow-y-auto bg-gray-800/50">
-              {chatMessages.map((message, index) => (
-                <div key={index} className={`mb-2 flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-                  {!message.isUser && isLastAgentMessage(index) && (
-                    <img 
-                      src={avatarSrc}
-                      alt={agentName}
-                      className="w-6 h-6 md:w-8 md:h-8 rounded-full mr-2 self-end"
-                    />
-                  )}
-                  <div
-                    className={`max-w-[85%] p-3 rounded-lg text-xs sm:text-sm md:text-base ${
-                      message.isUser
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-700 text-gray-100'
-                    } ${!message.isUser && !isLastAgentMessage(index) ? 'ml-8 md:ml-10' : ''}`}
-                  >
-                    {message.content}
+              {messageTransitions((style, message, _, index) => (
+                <animated.div style={style}>
+                  <div className={`mb-1 flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
+                    {!message.isUser && isLastAgentMessage(index) && (
+                      <animated.img 
+                        src={avatarSrc}
+                        alt={agentName}
+                        style={{
+                          ...style,
+                          config: {
+                            tension: 280,
+                            friction: 20,
+                          }
+                        }}
+                        className="w-6 h-6 md:w-8 md:h-8 rounded-full mr-2 self-end"
+                      />
+                    )}
+                    <div
+                      className={`max-w-[85%] p-3 rounded-lg text-xs sm:text-sm md:text-base leading-snug ${
+                        message.isUser
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-700 text-gray-100'
+                      } ${!message.isUser && !isLastAgentMessage(index) ? 'ml-8 md:ml-10' : ''}`}
+                    >
+                      {message.isUser ? (
+                        <span>{message.content}</span>
+                      ) : (
+                        <ReactMarkdown
+                          className="prose prose-invert max-w-none !leading-snug [&>*]:!my-1 [&_p]:!mb-1 last:[&_p]:!mb-0 [&_ul]:!my-1 [&_ol]:!my-1 [&_li]:!my-0"
+                          components={{
+                            p: ({...props}) => <p className="!my-0 !mb-2 last:!mb-0" {...props} />,
+                            a: ({...props}) => <a className="text-indigo-300 hover:text-indigo-200" {...props} />,
+                            ul: ({...props}) => <ul className="!my-2 !ml-3" {...props} />,
+                            ol: ({...props}) => <ol className="!my-2 !ml-3" {...props} />,
+                            li: ({...props}) => <li className="!my-0" {...props} />,
+                            code: ({...props}) => <code className="bg-gray-800 px-1 py-0.5 rounded" {...props} />,
+                            h1: ({...props}) => <h1 className="!my-1 !mb-1 !text-lg !font-bold" {...props} />,
+                            h2: ({...props}) => <h2 className="!my-1 !mb-1 !text-base !font-bold" {...props} />,
+                            h3: ({...props}) => <h3 className="!my-2 !mb-1 !mt-2 !text-lg !font-bold" {...props} />,
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </animated.div>
               ))}
               {isTyping && (
                 <div className="flex justify-start ml-10">
