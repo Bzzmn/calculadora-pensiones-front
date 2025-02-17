@@ -23,6 +23,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true
         },
       },
+
+      allowedHosts: [
+        '49f3f15d3be0.ngrok.app',
+        'localhost',
+        '127.0.0.1',
+      ]
     },
   };
 });

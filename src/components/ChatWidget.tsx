@@ -219,13 +219,14 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
           </animated.div>
         </div>
       ) : (
-        <div className="fixed inset-0 sm:relative sm:inset-auto flex items-end sm:items-center justify-center sm:block">
+        <div className="fixed inset-0 sm:relative sm:inset-auto flex items-end sm:items-center justify-center">
           <div
             className="bg-gray-900 rounded-lg shadow-xl 
-            w-full sm:w-96 md:w-[450px] 
-            h-[100vh] sm:h-[600px] 
-            max-h-[100vh] sm:max-h-[90vh]
+            w-[calc(100vw-2rem)] sm:w-[360px] md:w-[400px] lg:w-[450px] 
+            h-[calc(100dvh-2rem)] sm:h-[500px] md:h-[600px] lg:h-[650px] 
+            max-h-[calc(100dvh-2rem)] sm:max-h-[600px] md:max-h-[700px] lg:max-h-[800px]
             flex flex-col overflow-hidden
+            mx-4 mb-4 sm:mx-0 sm:mb-0
             sm:fixed sm:bottom-4 sm:right-4"
           >
             <div className="flex justify-between items-center p-5 bg-gray-800/50">
