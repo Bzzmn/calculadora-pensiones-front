@@ -1,11 +1,12 @@
 import { Doughnut } from 'react-chartjs-2';
-import { ReformaResponse } from '../types/pension';
+import { SaldoAcumulado } from '../types/pension';
 import { formatCurrency } from '../utils/formatters';
 import { TooltipItem } from 'chart.js';
 
 interface PieChartDisplayProps {
-  data: ReformaResponse;
+  data: SaldoAcumulado;
   title: string;
+  className?: string;
 }
 
 export const PieChartDisplay = ({ data, title }: PieChartDisplayProps) => {

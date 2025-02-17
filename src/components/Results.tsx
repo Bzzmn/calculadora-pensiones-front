@@ -36,13 +36,13 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Pre-reforma column */}
-        <div className="space-y-6">
-          <div className="bg-blue-50 p-6 rounded-xl">
-            <h3 className="text-xl font-bold text-blue-900 mb-4">Sin Reforma</h3>
-            <div className="space-y-4">
+        <div className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded-xl">
+            <h3 className="text-lg sm:text-xl font-bold text-blue-900 mb-2">Sin Reforma</h3>
+            <div className="space-y-2">
               <div>
-                <p className="text-sm text-blue-700">Pensión Total</p>
-                <p className="text-3xl font-bold text-blue-900">
+                <p className="text-xs sm:text-sm text-blue-700">Pensión Total</p>
+                <p className="text-xl sm:text-3xl font-bold text-blue-900">
                   {formatCurrency(response.pre_reforma.pension_total)}
                 </p>
               </div>
@@ -51,17 +51,18 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
           <PieChartDisplay 
             data={response.pre_reforma.saldo_acumulado}
             title="Distribución de Aportes"
+            className="text-xs sm:text-sm"
           />
         </div>
 
         {/* Post-reforma column */}
-        <div className="space-y-6">
-          <div className="bg-green-50 p-6 rounded-xl">
-            <h3 className="text-xl font-bold text-green-900 mb-4">Con Reforma</h3>
-            <div className="space-y-4">
+        <div className="space-y-4">
+          <div className="bg-green-50 p-4 rounded-xl">
+            <h3 className="text-lg sm:text-xl font-bold text-green-900 mb-2">Con Reforma</h3>
+            <div className="space-y-2">
               <div>
-                <p className="text-sm text-green-700">Pensión Total</p>
-                <p className="text-3xl font-bold text-green-900">
+                <p className="text-xs sm:text-sm text-green-700">Pensión Total</p>
+                <p className="text-xl sm:text-3xl font-bold text-green-900">
                   {formatCurrency(response.post_reforma.pension_total)}
                 </p>
                 <button
@@ -103,6 +104,7 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
           <PieChartDisplay 
             data={response.post_reforma.saldo_acumulado}
             title="Distribución de Aportes"
+            className="text-xs sm:text-sm"
           />
         </div>
 
@@ -138,23 +140,43 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
           </div>
         </div>
 
-        {/* Comparación y Brecha */}
+        {/* Brecha Previsional */}
         <div className="md:col-span-2">
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-100">
             <h3 className="text-lg font-semibold text-purple-900 mb-4">Brecha Previsional</h3>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-4">
               <div>
-                <p className="text-sm text-purple-700">Diferencia con respecto a la Pensión Ideal</p>
-                <p className="text-xl sm:text-2xl font-bold text-purple-900">
-                  {formatCurrency(response.pension_objetivo.brecha_mensual_post_reforma)}
-                </p>
+                <p className="text-sm text-purple-700 mb-2">Pensión Ideal</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-purple-600">Hoy</p>
+                    <p className="text-base sm:text-lg font-bold text-purple-900">
+                      {formatCurrency(response.pension_objetivo.valor_presente)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-purple-600">Al Jubilar</p>
+                    <p className="text-base sm:text-lg font-bold text-purple-900">
+                      {formatCurrency(response.pension_objetivo.valor_futuro)}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-purple-700">Expectativa de Vida</p>
-                <p className="text-xl sm:text-2xl font-bold text-purple-900">
-                  {Math.floor(response.metadata.expectativa_vida)} años{' '}
-                  {Math.round((response.metadata.expectativa_vida % 1) * 12)} meses
-                </p>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-purple-700">Brecha mensual</p>
+                  <p className="text-base sm:text-lg font-bold text-purple-900">
+                    {formatCurrency(response.pension_objetivo.brecha_mensual_post_reforma)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-purple-700">Expectativa de Vida</p>
+                  <p className="text-base sm:text-lg font-bold text-purple-900">
+                    {Math.floor(response.metadata.expectativa_vida)} años{' '}
+                    {Math.round((response.metadata.expectativa_vida % 1) * 12)} meses
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -165,18 +187,22 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
+              className="group relative inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl w-full sm:w-auto"
             >
-              <FileText className="w-5 h-5 mr-2" />
-              Obtener informe detallado
+              <div className="absolute inset-0 bg-white/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+              <FileText className="w-4 h-4 mr-2" />
+              <span className="relative">
+                Obtener Informe Detallado
+              </span>
             </button>
+
             <button
               onClick={handleRecalculate}
-              className="inline-flex items-center justify-center px-6 py-3 border-2 border-indigo-600 rounded-md shadow-sm text-base font-medium text-indigo-600 hover:bg-indigo-50 w-full sm:w-auto"
+              className="inline-flex items-center justify-center px-4 py-2 border-2 border-indigo-600 rounded-md shadow-sm text-sm font-medium text-indigo-600 hover:bg-indigo-50 w-full sm:w-auto"
             >
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
-                className="w-5 h-5 mr-2" 
+                className="w-4 h-4 mr-2" 
                 fill="none" 
                 viewBox="0 0 24 24" 
                 stroke="currentColor"

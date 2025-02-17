@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { calculatePension } from '../services/api';
 import { PensionFormData, ApiResponse } from '../types/pension';
 
@@ -7,54 +8,84 @@ interface SessionState {
   sessionData: ApiResponse | null;
   isLoading: boolean;
   error: string | null;
+  emailSent: boolean;
+  userEmail: string | null;
   initializeSession: () => void;
   calculateAndSave: (formData: PensionFormData) => Promise<void>;
+  setEmailSent: (sent: boolean, email: string) => void;
   clearSession: () => void;
 }
 
-export const useSessionStore = create<SessionState>((set, get) => ({
-  sessionId: null,
-  sessionData: null,
-  isLoading: false,
-  error: null,
-
-  initializeSession: () => {
-    const sessionId = crypto.randomUUID();
-    set({ sessionId });
-  },
-
-  calculateAndSave: async (formData: PensionFormData) => {
-    try {
-      set({ isLoading: true, error: null });
-      
-      const sessionId = get().sessionId;
-      if (!sessionId) {
-        throw new Error('No hay sesión activa');
-      }
-
-      const result = await calculatePension(formData, sessionId);
-      
-      set({
-        sessionData: result,
-        isLoading: false,
-        error: null
-      });
-
-    } catch (error) {
-      console.error('Error in calculateAndSave:', error);
-      set({ 
-        error: error instanceof Error ? error.message : 'Error desconocido',
-        isLoading: false 
-      });
-      throw error;
-    }
-  },
-
-  clearSession: () => {
-    set({
+export const useSessionStore = create<SessionState>()(
+  persist(
+    (set, get) => ({
       sessionId: null,
       sessionData: null,
-      error: null
-    });
-  }
-})); 
+      isLoading: false,
+      error: null,
+      emailSent: false,
+      userEmail: null,
+
+      initializeSession: () => {
+        const currentSession = get().sessionId;
+        if (!currentSession) {
+          const newSessionId = crypto.randomUUID();
+          set({ sessionId: newSessionId });
+        }
+      },
+
+      calculateAndSave: async (formData: PensionFormData) => {
+        try {
+          set({ isLoading: true, error: null });
+          
+          let sessionId = get().sessionId;
+          if (!sessionId) {
+            sessionId = crypto.randomUUID();
+            set({ sessionId });
+          }
+
+          const result = await calculatePension(formData, sessionId);
+          
+          set({
+            sessionData: result,
+            isLoading: false,
+            error: null
+          });
+
+        } catch (error) {
+          console.error('Error in calculateAndSave:', error);
+          set({ 
+            error: error instanceof Error ? error.message : 'Error desconocido',
+            isLoading: false 
+          });
+          throw error;
+        }
+      },
+
+      setEmailSent: (sent, email) => set({ 
+        emailSent: sent,
+        userEmail: email
+      }),
+
+      clearSession: () => {
+        const newSessionId = crypto.randomUUID();
+        set({
+          sessionId: newSessionId,
+          sessionData: null,
+          error: null,
+          emailSent: false,
+          userEmail: null
+        });
+      }
+    }),
+    {
+      name: 'pension-session-storage',
+      partialize: (state) => ({
+        sessionId: state.sessionId,
+        sessionData: state.sessionData,
+        emailSent: state.emailSent,
+        userEmail: state.userEmail,
+      }),
+    }
+  )
+); 

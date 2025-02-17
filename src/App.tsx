@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calculator, ArrowRight, ArrowLeft, RefreshCcw } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { PensionFormData } from './types/pension';
 import { Results } from './components/Results';
@@ -16,8 +16,7 @@ export const App = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [formData, setFormData] = useState<PensionFormData>(initialFormData);
   
-  const { 
-    sessionId, 
+  const {  
     sessionData, 
     isLoading,
     error,
@@ -26,8 +25,26 @@ export const App = () => {
   } = useSessionStore();
 
   useEffect(() => {
-    initializeSession();
+    const loadSession = async () => {
+      try {
+        await initializeSession();
+      } catch (err) {
+        console.error('Error al cargar la sesión:', err);
+        setCurrentStep(0);
+        setShowSummary(false);
+        setFormData(initialFormData);
+      }
+    };
+
+    loadSession();
   }, []);
+
+  useEffect(() => {
+    if (sessionData) {
+      setShowSummary(false);
+      setCurrentStep(0);
+    }
+  }, [sessionData]);
 
   const handleCalculatePension = async () => {
     try {
