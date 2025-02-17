@@ -222,10 +222,11 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
         <div className="fixed inset-0 sm:relative sm:inset-auto flex items-end sm:items-center justify-center sm:block">
           <div
             className="bg-gray-900 rounded-lg shadow-xl 
-            w-[95vw] sm:w-96 md:w-[450px] 
-            h-[90vh] sm:h-[90vh] md:h-[90vh] 
-            min-h-[400px] 
-            flex flex-col overflow-hidden"
+            w-full sm:w-96 md:w-[450px] 
+            h-[100vh] sm:h-[600px] 
+            max-h-[100vh] sm:max-h-[90vh]
+            flex flex-col overflow-hidden
+            sm:fixed sm:bottom-4 sm:right-4"
           >
             <div className="flex justify-between items-center p-5 bg-gray-800/50">
               <div className="flex items-center space-x-3">
