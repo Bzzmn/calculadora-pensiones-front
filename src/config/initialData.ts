@@ -1,6 +1,6 @@
-import { FormData } from '../types/pension';
+import { PensionFormData } from '../types/pension';
 
-export const initialFormData: FormData = {
+export const initialFormData: PensionFormData = {
   nombre: '',
   edad: {
     anos: 25,

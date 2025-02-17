@@ -1,10 +1,10 @@
-import { FormData } from '../types/pension';
+import { PensionFormData } from '../types/pension';
 import React from 'react';
 
 export const questions = [
   {
     title: "¿Cuál es tu nombre?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <input
         type="text"
         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
@@ -23,7 +23,7 @@ export const questions = [
         required
       />
     ),
-    isValid: (formData: FormData) => {
+    isValid: (formData: PensionFormData) => {
       // Validate that name has at least 2 characters, starts with uppercase and contains only letters
       return formData.nombre.length >= 2 && 
              /^[A-Z][a-zÀ-ÿ\s]*$/.test(formData.nombre);
@@ -31,7 +31,7 @@ export const questions = [
   },
   {
     title: "¿Cuál es tu edad?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -80,7 +80,7 @@ export const questions = [
         </p>
       </div>
     ),
-    isValid: (formData: FormData) => {
+    isValid: (formData: PensionFormData) => {
       return formData.edad.anos >= 25 && 
              formData.edad.anos <= 65 && 
              formData.edad.meses >= 0 && 
@@ -89,7 +89,7 @@ export const questions = [
   },
   {
     title: "¿Cuál es tu género?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="mt-1 space-y-4">
         {['Masculino', 'Femenino'].map((option) => (
           <label key={option} className="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
@@ -107,11 +107,11 @@ export const questions = [
         ))}
       </div>
     ),
-    isValid: (formData: FormData) => formData.genero !== ''
+    isValid: (formData: PensionFormData) => formData.genero !== ''
   },
   {
     title: "¿A qué edad planeas retirarte?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="mt-4">
         <input
           type="range"
@@ -135,7 +135,7 @@ export const questions = [
   },
   {
     title: "¿Cuál es tu total acumulado en tu cuenta de capitalización individual?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="space-y-4">
 
         <div className="mt-1 relative rounded-md shadow-sm">
@@ -174,11 +174,11 @@ export const questions = [
         </p>
       </div>
     ),
-    isValid: (formData: FormData) => formData.capitalIndividual > 0
+    isValid: (formData: PensionFormData) => formData.capitalIndividual > 0
   },
   {
     title: "¿Cuál es tu salario bruto actual?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="mt-1 relative rounded-md shadow-sm">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <span className="text-gray-500 sm:text-sm">$</span>
@@ -202,11 +202,11 @@ export const questions = [
         </div>
       </div>
     ),
-    isValid: (formData: FormData) => formData.salarioBruto > 0
+    isValid: (formData: PensionFormData) => formData.salarioBruto > 0
   },
   {
     title: "Si te retiraras hoy, ¿cuál sería tu monto ideal de pensión mensual?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="space-y-4">
         <div className="space-y-2">
           <ul className="list-disc pl-5 space-y-1">
@@ -242,11 +242,11 @@ export const questions = [
         </div>
       </div>
     ),
-    isValid: (formData: FormData) => formData.pensionIdeal > 0
+    isValid: (formData: PensionFormData) => formData.pensionIdeal > 0
   },
   {
     title: "¿Cuál es tu nivel de estudios?",
-    component: (formData: FormData, setFormData: React.Dispatch<React.SetStateAction<FormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="space-y-4">
         <div>
           <label htmlFor="nivelEstudios" className="block text-sm font-medium text-gray-700 mb-1">
@@ -277,6 +277,6 @@ export const questions = [
         </div>
       </div>
     ),
-    isValid: (formData: FormData) => formData.nivelEstudios !== ''
+    isValid: (formData: PensionFormData) => formData.nivelEstudios !== ''
   }
 ]; 

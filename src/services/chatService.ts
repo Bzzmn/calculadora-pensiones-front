@@ -1,14 +1,13 @@
 import { ChatRequest, PensionData } from '../types/chat';
 import { ENDPOINTS } from '../config/endpoints';
-import { FormData } from '../types/pension';
-import { ApiResponse } from '../types/pension';
+import { PensionFormData, ApiResponse } from '../types/pension';
 import { useSessionStore } from '../stores/sessionStore';
 
 const getAgentName = (gender: 'Masculino' | 'Femenino'): string => {
   return gender === 'Masculino' ? 'Alexandra' : 'Alejandro';
 };
 
-export const buildPensionData = (formData: FormData, apiResponse: ApiResponse): PensionData => {
+export const buildPensionData = (formData: PensionFormData, apiResponse: ApiResponse): PensionData => {
   const generoFormatted = formData.genero === 'Masculino' ? 'M' : 'F';
   
   return {

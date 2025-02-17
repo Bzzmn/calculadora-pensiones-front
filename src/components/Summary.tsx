@@ -1,9 +1,9 @@
 import { ArrowLeft } from 'lucide-react';
-import { FormData } from '../types/pension';
+import { PensionFormData } from '../types/pension';
 import { formatCurrency } from '../utils/formatters';
 
 interface SummaryProps {
-  formData: FormData;
+  formData: PensionFormData;
   onPrevious: () => void;
   onCalculate: () => void;
 }

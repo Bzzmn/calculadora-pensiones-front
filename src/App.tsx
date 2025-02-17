@@ -37,7 +37,7 @@ export const App = () => {
     };
 
     loadSession();
-  }, []);
+  }, [initializeSession]);
 
   useEffect(() => {
     if (sessionData) {
