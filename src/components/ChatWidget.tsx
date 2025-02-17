@@ -1,4 +1,4 @@
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Maximize2, Minimize2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTransition, animated, useSpring } from "@react-spring/web";
 import { Message } from "../types/chat";
@@ -23,6 +23,7 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
   const { chatInitialized, setChatInitialized, chatMessages, addChatMessage } =
     useSessionStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showLargeAvatar, setShowLargeAvatar] = useState(false);
@@ -238,50 +239,73 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
         </div>
       ) : (
         <div 
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/20"
+          className={`fixed inset-0 z-50 flex 
+          ${isMaximized ? 'items-center justify-center p-0 sm:p-8 md:p-12 lg:p-16 xl:p-20' : 'sm:items-end sm:justify-end'}`}
           onClick={() => setIsOpen(false)}
         >
+          {/* Capa de fondo */}
+          <div className={`absolute inset-0 transition-opacity duration-300
+            ${isMaximized ? 'bg-gray-900' : 'bg-black/20'}`}
+          />
+
           <div
-            className="bg-gray-900 rounded-lg shadow-xl 
-            w-[calc(100vw-2rem)] sm:w-[360px] md:w-[400px] lg:w-[450px] 
-            h-[calc(100dvh-4rem)] sm:h-[500px] md:h-[600px] lg:h-[650px] 
-            max-h-[calc(95dvh)] sm:max-h-[95dvh] md:max-h-[95dvh] lg:max-h-[95dvh]
+            className={`bg-gray-900 rounded-none sm:rounded-lg shadow-xl 
+            ${isMaximized ? 
+              'w-full h-full sm:max-w-[1200px] md:max-w-600px] lg:max-w-[700px] xl:max-w-[850px] 2xl:max-w-[1000px]' : 
+              'w-full sm:w-[400px] md:w-[450px] lg:w-[500px]'
+            }
+            ${isMaximized ? 
+              'h-full' : 
+              'h-[100dvh] sm:h-auto md:h-auto lg:h-auto'
+            }
+            ${isMaximized ? 
+              'max-h-full' : 
+              'max-h-[100dvh] sm:max-h-[75vh] md:max-h-[80vh] lg:max-h-[85vh]'
+            }
+            min-h-[400px] sm:min-h-[450px] md:min-h-[500px] lg:min-h-[550px]
             flex flex-col
-            absolute bottom-4 right-4 sm:right-4 sm:bottom-4
-            mx-4 sm:mx-0 mb-0"
+            ${isMaximized ? 'm-0' : 'm-0 sm:m-4'}
+            transition-all duration-300 ease-in-out
+            relative z-10`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-5 bg-gray-800/50 shrink-0">
+            <div className="flex justify-between items-center px-6 py-4 bg-gray-800/50 shrink-0">
               <div className="flex items-center space-x-3">
                 <img
                   src={avatarSrc}
                   alt={agentName}
-                  className="w-12 h-12 rounded-full border-2 border-indigo-500/30 cursor-pointer hover:border-indigo-500 transition-colors"
-                  onClick={() => setShowLargeAvatar(true)}
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-full"
                 />
-                <div className="flex flex-col">
-                  <span className="text-gray-100 font-medium text-base sm:text-lg">
-                    {agentName}
-                  </span>
-                  <span className="text-gray-400 text-xs sm:text-sm">
-                    Asistente Virtual
-                  </span>
-                </div>
+                <span className="text-gray-100 font-medium text-sm sm:text-base md:text-lg">
+                  {agentName}
+                </span>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-300 transition-colors p-2 hover:bg-gray-700 rounded-full"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setIsMaximized(!isMaximized)}
+                  className="hidden sm:flex items-center justify-center p-2 text-gray-400 hover:text-gray-100 transition-colors"
+                >
+                  {isMaximized ? 
+                    <Minimize2 className="w-5 h-5 md:w-6 md:h-6" /> : 
+                    <Maximize2 className="w-5 h-5 md:w-6 md:h-6" />
+                  }
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center p-2 text-gray-400 hover:text-gray-100 transition-colors"
+                >
+                  <X className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+              </div>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto bg-gray-800/50 space-y-4 min-h-0
+            <div className={`flex-1 p-4 md:p-6 overflow-y-auto bg-gray-800/50 space-y-4 min-h-0
               [&::-webkit-scrollbar]:w-2
               [&::-webkit-scrollbar-track]:bg-gray-800/40
               [&::-webkit-scrollbar-thumb]:bg-gray-600
               [&::-webkit-scrollbar-thumb]:rounded-full
-              hover:[&::-webkit-scrollbar-thumb]:bg-gray-500"
+              hover:[&::-webkit-scrollbar-thumb]:bg-gray-500
+              ${isMaximized ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}
             >
               {transitions((styles, item, _, index) => (
                 <animated.div style={styles}>
@@ -360,25 +384,25 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
 
             <form
               onSubmit={handleSendMessage}
-              className="p-4 border-t border-gray-700 bg-gray-800 shrink-0"
+              className="p-4 pb-6 sm:pb-4 md:p-6 border-t border-gray-700 bg-gray-800 shrink-0"
             >
-              <div className="flex space-x-2">
+              <div className="flex space-x-4">
                 <input
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Mensaje"
-                  className="flex-1 p-2 bg-gray-700 text-gray-100 text-sm sm:text-base md:text-lg border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400"
-                  disabled={isTyping}
+                  placeholder="Escribe un mensaje..."
+                  className="flex-1 min-h-[48px] md:min-h-[52px] px-4 py-3 bg-gray-700 
+                    text-gray-100 rounded-lg placeholder-gray-400 
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500
+                    text-sm sm:text-base md:text-lg"
                 />
                 <button
                   type="submit"
-                  className={`${
-                    isTyping
-                      ? "bg-gray-600 cursor-not-allowed"
-                      : "bg-indigo-600 hover:bg-indigo-700"
-                  } text-white p-2 rounded-lg transition-colors`}
-                  disabled={isTyping || !newMessage.trim()}
+                  disabled={!newMessage.trim()}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg 
+                    hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed 
+                    transition-colors"
                 >
                   <Send className="w-5 h-5 md:w-6 md:h-6" />
                 </button>

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { calculatePension } from '../services/api';
 import { PensionFormData, ApiResponse } from '../types/pension';
 import { Message } from '../types/chat';
+import { generateUUID } from '../utils/uuid';
 
 interface SessionState {
   sessionId: string | null;
@@ -37,7 +38,7 @@ export const useSessionStore = create<SessionState>()(
       initializeSession: () => {
         const currentSession = get().sessionId;
         if (!currentSession) {
-          const newSessionId = crypto.randomUUID();
+          const newSessionId = generateUUID();
           set({ sessionId: newSessionId });
         }
       },
@@ -48,7 +49,7 @@ export const useSessionStore = create<SessionState>()(
           
           let sessionId = get().sessionId;
           if (!sessionId) {
-            sessionId = crypto.randomUUID();
+            sessionId = generateUUID();
             set({ sessionId });
           }
 
@@ -88,7 +89,7 @@ export const useSessionStore = create<SessionState>()(
       })),
 
       clearSession: () => {
-        const newSessionId = crypto.randomUUID();
+        const newSessionId = generateUUID();
         set({
           sessionId: newSessionId,
           sessionData: null,
