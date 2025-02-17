@@ -1,29 +1,36 @@
-import {  ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { ApiResponse } from '../types/pension';
 import { formatCurrency, formatPercentage } from '../utils/formatters';
 import { PieChartDisplay } from './PieChartDisplay';
 import { useState } from 'react';
 import { EmailReportModal } from './EmailReportModal';
 import { ChatWidget } from './ChatWidget';
+import { useSessionStore } from '../stores/sessionStore';
 
 interface ResultsProps {
-  response: ApiResponse & {
-    genero: 'Masculino' | 'Femenino';
-    pensionIdeal: number;
-    pensionIdealFutura: number;
-  };
+  response: ApiResponse;
   onRecalculate: () => void;
 }
 
 export const Results = ({ response, onRecalculate }: ResultsProps) => {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const clearSession = useSessionStore(state => state.clearSession);
 
   const handleSubmitReport = (data: { email: string; optIn: boolean }) => {
-    // Aquí iría la lógica para enviar el informe
     console.log('Enviando informe a:', data);
     setShowModal(false);
   };
+
+  const handleRecalculate = () => {
+    clearSession(); // Limpia la sesión actual
+    onRecalculate(); // Vuelve al inicio
+  };
+
+  // Verificar que las propiedades existan
+  if (!response?.pre_reforma || !response?.post_reforma) {
+    return <div>Error: Datos de pensión no disponibles</div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -38,16 +45,11 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
                 <p className="text-3xl font-bold text-blue-900">
                   {formatCurrency(response.pre_reforma.pension_total)}
                 </p>
-                <div className="mt-2 h-5"></div>
               </div>
             </div>
           </div>
           <PieChartDisplay 
-            data={{
-              aporte_trabajador: response.pre_reforma.saldo_acumulado.aporte_trabajador,
-              aporte_empleador: response.pre_reforma.saldo_acumulado.aporte_empleador,
-              rentabilidad_acumulada: response.pre_reforma.saldo_acumulado.rentabilidad_acumulada
-            }}
+            data={response.pre_reforma.saldo_acumulado}
             title="Distribución de Aportes"
           />
         </div>
@@ -78,19 +80,13 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
                       <p className="text-lg font-semibold text-green-900">
                         {formatCurrency(response.post_reforma.pension_mensual_base)}
                       </p>
-                      <div className="invisible group-hover:visible absolute z-10 w-64 p-2 mt-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                        Pensión estimada por recibir desde el balance del fondo de capitalización individual
-                      </div>
                     </div>
-                    {response.genero === 'Femenino' && (
+                    {response.metadata?.genero === 'F' && (
                       <div className="group relative">
                         <p className="text-sm text-green-700">Compensación por Expectativa de Vida</p>
                         <p className="text-lg font-semibold text-green-900">
                           {formatCurrency(response.post_reforma.pension_adicional_compensacion)}
                         </p>
-                        <div className="invisible group-hover:visible absolute z-10 w-64 p-2 mt-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                          Monto estimado de compensación por mayor expectativa de vida de mujeres con respecto a hombres
-                        </div>
                       </div>
                     )}
                     <div className="group relative">
@@ -98,9 +94,6 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
                       <p className="text-lg font-semibold text-green-900">
                         {formatCurrency(response.post_reforma.bono_seguridad_previsional)}
                       </p>
-                      <div className="invisible group-hover:visible absolute z-10 w-64 p-2 mt-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                        Cuota estimada que proviene de los fondos aportados al Fondo Autónomo de Protección Previsional (FAPP)
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -108,28 +101,25 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
             </div>
           </div>
           <PieChartDisplay 
-            data={{
-              aporte_trabajador: response.post_reforma.saldo_acumulado.aporte_trabajador,
-              aporte_empleador: response.post_reforma.saldo_acumulado.aporte_empleador,
-              rentabilidad_acumulada: response.post_reforma.saldo_acumulado.rentabilidad_acumulada
-            }}
+            data={response.post_reforma.saldo_acumulado}
             title="Distribución de Aportes"
           />
         </div>
 
-        {/* Comparison section */}
-        <div className="md:col-span-2">
+
+           {/* Comparison section */}
+           <div className="md:col-span-2">
           <div className="bg-indigo-50 p-6 rounded-xl">
             <h3 className="text-lg font-semibold text-indigo-900 mb-4">Comparación de Resultados</h3>
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm text-indigo-700">Diferencia en Pensión</p>
                 <div className="flex items-center gap-2">
-                  <p className="text-2xl font-bold text-indigo-900">
+                  <p className="text-xl sm:text-2xl font-bold text-indigo-900">
                     {formatCurrency(response.post_reforma.pension_total - response.pre_reforma.pension_total)}
                   </p>
                   {response.post_reforma.pension_total > response.pre_reforma.pension_total && (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   )}
@@ -137,7 +127,7 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
               </div>
               <div>
                 <p className="text-sm text-indigo-700">Mejora Porcentual</p>
-                <p className="text-2xl font-bold text-indigo-900">
+                <p className="text-xl sm:text-2xl font-bold text-indigo-900">
                   <span className="text-green-500">
                     {((response.post_reforma.pension_total - response.pre_reforma.pension_total) / response.pre_reforma.pension_total) > 0 ? '+' : ''}
                   </span>
@@ -148,69 +138,59 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
           </div>
         </div>
 
-        {/* Comparison with Ideal Pension */}
+        {/* Comparación y Brecha */}
         <div className="md:col-span-2">
-          <div className="bg-purple-50 p-6 rounded-xl">
-            <h3 className="text-lg font-semibold text-purple-900 mb-4">Comparación con Pensión Ideal</h3>
-            
-            {/* Ideal Pension Display */}
-            <div className="flex items-center justify-center gap-16 mb-6">
-              <div className="group relative text-right">
-                <p className="text-sm text-purple-700">Pensión Ideal Actual</p>
-                <p className="text-2xl font-bold text-purple-900">
-                  {formatCurrency(response.pension_objetivo.valor_presente)}
-                </p>
-                <div className="invisible group-hover:visible absolute z-10 w-64 p-2 mt-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity right-0">
-                  Monto mensual que declaraste necesitar para mantener tu calidad de vida actual
-                </div>
-              </div>
-
-              <div className="text-purple-400">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </div>
-
-              <div className="group relative text-left">
-                <p className="text-sm text-purple-700">Pensión Ideal Futura</p>
-                <p className="text-2xl font-bold text-purple-900">
-                  {formatCurrency(response.pension_objetivo.valor_futuro)}
-                </p>
-                <div className="invisible group-hover:visible absolute z-10 w-64 p-2 mt-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity left-0">
-                  Proyección de tu pensión ideal considerando inflación y años hasta tu jubilación
-                </div>
-              </div>
-            </div>
-
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-100">
+            <h3 className="text-lg font-semibold text-purple-900 mb-4">Brecha Previsional</h3>
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-purple-100 p-4 rounded-lg border-2 border-purple-300">
-                <p className="text-sm text-purple-700 font-medium">Brecha con Pensión Ideal</p>
-                <p className="text-2xl font-bold text-purple-900">
+              <div>
+                <p className="text-sm text-purple-700">Diferencia con respecto a la Pensión Ideal</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-900">
                   {formatCurrency(response.pension_objetivo.brecha_mensual_post_reforma)}
                 </p>
-                <p className="text-xs text-purple-600 mt-1">
-                  Diferencia entre tu pensión proyectada y tu pensión ideal
-                </p>
               </div>
-              <div className="text-left pl-16">
-                <p className="text-sm text-purple-700">Tu expectativa de vida</p>
-                <p className="text-2xl font-bold text-purple-900">
-                  {response.metadata.expectativa_vida.toFixed(1)} años
+              <div>
+                <p className="text-sm text-purple-700">Expectativa de Vida</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-900">
+                  {Math.floor(response.metadata.expectativa_vida)} años{' '}
+                  {Math.round((response.metadata.expectativa_vida % 1) * 12)} meses
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="md:col-span-2 flex justify-center mt-8">
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-          >
-            <FileText className="w-5 h-5 mr-2" />
-            Obtener informe detallado
-          </button>
+        {/* Botones de acción */}
+        <div className="md:col-span-2">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
+            >
+              <FileText className="w-5 h-5 mr-2" />
+              Obtener informe detallado
+            </button>
+            <button
+              onClick={handleRecalculate}
+              className="inline-flex items-center justify-center px-6 py-3 border-2 border-indigo-600 rounded-md shadow-sm text-base font-medium text-indigo-600 hover:bg-indigo-50 w-full sm:w-auto"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="w-5 h-5 mr-2" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                />
+              </svg>
+              Recalcular
+            </button>
+          </div>
         </div>
 
         {/* Disclaimer Section */}
@@ -231,7 +211,11 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
             </div>
           </div>
         </div>
+  
       </div>
+
+
+
 
       <EmailReportModal
         isOpen={showModal}
@@ -246,11 +230,11 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
             anos: Math.floor(response.metadata?.edad || 0),
             meses: Math.round(((response.metadata?.edad || 0) % 1) * 12)
           },
-          genero: response.genero,
+          genero: response.metadata?.genero === 'F' ? 'Femenino' : 'Masculino',
           edadRetiro: response.metadata?.edad_jubilacion || 65,
           capitalIndividual: response.metadata?.balance_actual || 0,
           salarioBruto: response.metadata?.salario_mensual || 0,
-          pensionIdeal: response.pensionIdeal,
+          pensionIdeal: response.pension_objetivo?.valor_presente || 0,
           nivelEstudios: response.metadata?.estudios || ''
         }}
         showInitialMessage={true}

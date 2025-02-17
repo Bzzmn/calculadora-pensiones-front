@@ -1,5 +1,5 @@
 import { ENDPOINTS } from '../config/endpoints';
-import { sessionService } from './sessionService';
+import { useSessionStore } from '../stores/sessionStore';
 
 interface EmailRequestData {
   email: string;
@@ -17,7 +17,7 @@ interface EmailResponseSuccess {
 
 export const sendEmailReport = async (data: EmailRequestData): Promise<EmailResponseSuccess> => {
   try {
-    const sessionId = sessionService.getOrCreateSessionId();
+    const { sessionId } = useSessionStore.getState();
     
     const payload = {
       session_id: sessionId,

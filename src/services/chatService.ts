@@ -1,66 +1,57 @@
-const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
+import { ChatRequest, PensionData } from '../types/chat';
+import { ENDPOINTS } from '../config/endpoints';
+import { FormData } from '../types/pension';
+import { ApiResponse } from '../types/pension';
+import { useSessionStore } from '../stores/sessionStore';
 
-interface PensionData {
-  pre_reforma: {
-    saldo_acumulado: {
-      saldo_cuenta_individual: number;
-      aporte_trabajador: number;
-      aporte_empleador: number;
-      rentabilidad_acumulada: number;
-    };
-    aporte_sis: number;
-    pension_mensual_base: number;
-    pension_total: number;
-    pgu_aplicada: boolean;
-  };
-  post_reforma: {
-    saldo_acumulado: {
-      saldo_cuenta_individual: number;
-      aporte_trabajador: number;
-      aporte_empleador: number;
-      rentabilidad_acumulada: number;
-    };
-    aporte_sis: number;
-    aporte_compensacion_expectativa_vida: number;
-    balance_fapp: number;
-    bono_seguridad_previsional: number;
-    pension_mensual_base: number;
-    pension_adicional_compensacion: number;
-    pension_total: number;
-    pgu_aplicada: boolean;
-  };
-  pension_objetivo: {
-    valor_presente: number;
-    valor_futuro: number;
-    tasa_inflacion_anual: number;
-    brecha_mensual_post_reforma: number;
-  };
-  metadata: {
-    nombre: string;
-    edad: number;
-    genero: string;
-    edad_jubilacion: number;
-    balance_actual: number;
-    salario_mensual: number;
-    estudios: string;
-    expectativa_vida: number;
-  };
-}
+const getAgentName = (gender: 'Masculino' | 'Femenino'): string => {
+  return gender === 'Masculino' ? 'Alexandra' : 'Alejandro';
+};
 
-interface ChatRequest {
-  messageType: 'initial' | 'followup';
-  message: string;
-  pensionData: PensionData;
-}
+export const buildPensionData = (formData: FormData, apiResponse: ApiResponse): PensionData => {
+  const generoFormatted = formData.genero === 'Masculino' ? 'M' : 'F';
+  
+  return {
+    pre_reforma: apiResponse.pre_reforma,
+    post_reforma: apiResponse.post_reforma,
+    pension_objetivo: {
+      valor_presente: formData.pensionIdeal,
+      valor_futuro: formData.pensionIdeal * Math.pow(1.03, formData.edadRetiro - formData.edad.anos),
+      tasa_inflacion_anual: 0.03,
+      brecha_mensual_post_reforma: formData.pensionIdeal - apiResponse.post_reforma.pension_total
+    },
+    metadata: {
+      nombre: formData.nombre,
+      edad: formData.edad.anos + (formData.edad.meses / 12),
+      genero: generoFormatted,
+      edad_jubilacion: formData.edadRetiro,
+      balance_actual: formData.capitalIndividual,
+      salario_mensual: formData.salarioBruto,
+      estudios: formData.nivelEstudios,
+      expectativa_vida: formData.genero === 'Masculino' ? 85.5 : 90.8
+    }
+  };
+};
 
-export const sendMessageToAgent = async (data: ChatRequest) => {
+export const sendMessageToAgent = async (request: ChatRequest): Promise<string> => {
   try {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const { sessionId } = useSessionStore.getState();
+    
+    if (!sessionId) {
+      throw new Error('No session ID found');
+    }
+
+    const response = await fetch(ENDPOINTS.sendMessageToAgent, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        session_id: sessionId,
+        message: request.message,
+        messageType: request.messageType,
+        pensionData: request.pensionData
+      })
     });
 
     if (!response.ok) {
@@ -70,7 +61,13 @@ export const sendMessageToAgent = async (data: ChatRequest) => {
     const result = await response.json();
     return result.message;
   } catch (error) {
-    console.error('Error sending message to agent:', error);
+    console.error('Error en chat service:', error);
     throw error;
   }
+};
+
+export const chatService = {
+  getAgentName,
+  buildPensionData,
+  sendMessageToAgent
 };

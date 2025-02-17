@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { sendEmailReport } from '../services/emailService';
-import { LoadingButton } from './LoadingButton';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface EmailFormData {
   email: string;
@@ -38,13 +38,13 @@ export const EmailReportModal = ({ isOpen, onClose, onSubmit }: EmailReportModal
     if (isFormValid) {
       setIsLoading(true);
       setStatus({ type: null, message: '' });
-      
+
       try {
         const response = await sendEmailReport(emailForm);
-        
+
         // Esperamos a que termine la animación antes de mostrar el mensaje
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         if (response.message === "Email already sent") {
           setEmailAlreadySent(true);
           setStatus({
@@ -89,7 +89,7 @@ export const EmailReportModal = ({ isOpen, onClose, onSubmit }: EmailReportModal
               <X className="w-5 h-5" />
             </button>
           </div>
-          
+
           <p className="text-sm text-gray-600 mb-6">
             Te enviaremos un PDF detallado con el análisis completo de tu situación previsional, incluyendo todos los montos estimados de tus aportes y consejos personalizados para ayudarte a alcanzar tu pensión ideal. A cambio te pido que te suscribas a mi newsletter mensual donde te enviaré noticias relevantes del mundo de la tecnología y finanzas.
           </p>
@@ -105,8 +105,8 @@ export const EmailReportModal = ({ isOpen, onClose, onSubmit }: EmailReportModal
                 required
                 disabled={emailAlreadySent}
                 className={`block w-full rounded-md shadow-sm sm:text-sm p-2 border
-                  ${emailAlreadySent 
-                    ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed' 
+                  ${emailAlreadySent
+                    ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
                     : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'}`}
                 value={emailForm.email}
                 onChange={(e) => setEmailForm({ ...emailForm, email: e.target.value })}
@@ -128,8 +128,8 @@ export const EmailReportModal = ({ isOpen, onClose, onSubmit }: EmailReportModal
                       : 'text-indigo-600 focus:ring-indigo-500'}`}
                 />
               </div>
-              <label 
-                htmlFor="opt-in" 
+              <label
+                htmlFor="opt-in"
                 className={`ml-3 text-sm ${emailAlreadySent ? 'text-gray-400' : 'text-gray-600'}`}
               >
                 Acepto suscribirme al newsletter de The_FullStack
@@ -137,15 +137,14 @@ export const EmailReportModal = ({ isOpen, onClose, onSubmit }: EmailReportModal
             </div>
 
             <div className="mt-6">
-              <LoadingButton 
+              <LoadingSpinner
                 isLoading={isLoading}
                 disabled={!isFormValid || emailAlreadySent}
               />
-              
+
               {status.type && (
-                <p className={`text-sm mt-2 text-center ${
-                  status.type === 'success' ? 'text-green-600' : 'text-red-500'
-                }`}>
+                <p className={`text-sm mt-2 text-center ${status.type === 'success' ? 'text-green-600' : 'text-red-500'
+                  }`}>
                   {status.message}
                 </p>
               )}

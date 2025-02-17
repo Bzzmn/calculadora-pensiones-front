@@ -1,56 +1,39 @@
 import { useState, useEffect } from 'react';
 import { Calculator, ArrowRight, ArrowLeft, RefreshCcw } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { FormData, ApiResponse } from './types/pension';
+import { PensionFormData } from './types/pension';
 import { Results } from './components/Results';
 import { Summary } from './components/Summary';
-import { calculatePension } from './services/api';
-import { sessionService } from './services/sessionService';
-import { initialFormData } from './data/initialData';
-import { questions } from './data/questions';
+import { initialFormData } from './config/initialData';
+import { questions } from './config/questions';
+import { useSessionStore } from './stores/sessionStore';
+import { LoadingSpinner } from './components/LoadingSpinner';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-function App() {
+export const App = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<PensionFormData>(initialFormData);
+  
+  const { 
+    sessionId, 
+    sessionData, 
+    isLoading,
+    error,
+    calculateAndSave,
+    initializeSession 
+  } = useSessionStore();
 
   useEffect(() => {
-    const loadSession = async () => {
-      try {
-        const sessionData = await sessionService.getSessionData();
-        if (sessionData) {
-          setApiResponse(sessionData);
-          setShowSummary(true);
-          setCurrentStep(questions.length);
-        }
-      } catch (error) {
-        console.error('Error loading session:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSession();
+    initializeSession();
   }, []);
 
-  const totalSteps = questions.length;
-
   const handleCalculatePension = async () => {
-    setIsLoading(true);
-    setError(null);
     try {
-      const response = await calculatePension(formData);
-      setApiResponse(response);
-      setShowSummary(true);
+      await calculateAndSave(formData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al calcular la pensión');
-    } finally {
-      setIsLoading(false);
+      console.error('Error al calcular pensión:', err);
     }
   };
 
@@ -65,133 +48,92 @@ function App() {
   const handlePrevious = () => {
     if (showSummary) {
       setShowSummary(false);
+      setCurrentStep(questions.length - 1);
     } else if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleRecalculate = () => {
-    sessionService.clearSession();
-    setApiResponse(null);
-    setFormData(initialFormData);
     setCurrentStep(0);
     setShowSummary(false);
-    setError(null);
+    setFormData(initialFormData);
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-          <RefreshCcw className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Calculando tu pensión</h2>
-          <p className="text-gray-600">Por favor espera mientras procesamos tu información...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-t-xl shadow-sm p-8">
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <Calculator className="w-8 h-8 text-indigo-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Planificador de Jubilación</h1>
-          </div>
-
-          {!showSummary && currentStep < totalSteps && (
-            <>
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-                <div
-                  className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500 ease-out transform origin-left"
-                  style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
-                ></div>
-              </div>
-              <div className="text-sm text-gray-600 text-center mb-8">
-                Paso {currentStep + 1} de {totalSteps}
-              </div>
-            </>
-          )}
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Calculadora de Pensiones
+          </h1>
+          <p className="mt-6 text-lg text-gray-600 px-4 sm:px-6">
+            Conoce cómo la reforma previsional afectará tu pensión
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-b-xl shadow-lg p-8">
-          {apiResponse ? (
-            <Results 
-              response={{
-                ...apiResponse,
-                genero: formData.genero,
-                pensionIdeal: formData.pensionIdeal,
-                pensionIdealFutura: formData.pensionIdeal
-              }}
-              onRecalculate={handleRecalculate}
-            />
-          ) : (
-            showSummary ? (
-              <Summary 
-                formData={formData}
-                onPrevious={handlePrevious}
-                onCalculate={handleCalculatePension}
+        {!sessionData && !showSummary && (
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700">
+                Paso {currentStep + 1} de {questions.length}
+              </span>
+              <span className="text-sm font-medium text-gray-700">
+                {Math.round(((currentStep + 1) / questions.length) * 100)}%
+              </span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full">
+              <div
+                className="h-2 bg-indigo-600 rounded-full transition-all duration-300"
+                style={{
+                  width: `${((currentStep + 1) / questions.length) * 100}%`,
+                }}
               />
-            ) : (
-              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  {questions[currentStep].title}
-                </h2>
+            </div>
+          </div>
+        )}
 
-                {questions[currentStep].component(formData, setFormData)}
-
-                <div className="flex justify-between mt-8">
-                  <button
-                    type="button"
-                    onClick={handlePrevious}
-                    className={`inline-flex items-center px-4 py-2 text-sm font-medium ${
-                      currentStep === 0
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-indigo-600 hover:text-indigo-700'
-                    }`}
-                    disabled={currentStep === 0}
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Anterior
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={!questions[currentStep].isValid(formData)}
-                    className={`inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                      questions[currentStep].isValid(formData)
-                        ? 'bg-indigo-600 hover:bg-indigo-700'
-                        : 'bg-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    {currentStep === totalSteps - 1 ? 'Revisar' : 'Siguiente'}
-                    {currentStep < totalSteps - 1 && <ArrowRight className="w-4 h-4 ml-2" />}
-                  </button>
-                </div>
-              </form>
-            )
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          {isLoading ? (
+            <LoadingSpinner isLoading={true} disabled={false} />
+          ) : error ? (
+            <div className="bg-red-50 p-4 rounded-md">
+              <p className="text-red-700">{error}</p>
+            </div>
+          ) : sessionData ? (
+            <Results response={sessionData} onRecalculate={handleRecalculate} />
+          ) : showSummary ? (
+            <Summary formData={formData} onPrevious={handlePrevious} onCalculate={handleCalculatePension} />
+          ) : (
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                {questions[currentStep]?.title}
+              </h2>
+              {questions[currentStep]?.component(formData, setFormData)}
+              <div className="flex justify-between mt-8">
+                <button
+                  onClick={handlePrevious}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  disabled={currentStep === 0}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Anterior
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                  disabled={!questions[currentStep]?.isValid(formData)}
+                >
+                  {currentStep === questions.length - 1 ? 'Revisar' : 'Siguiente'}
+                  {currentStep < questions.length - 1 && <ArrowRight className="w-4 h-4 ml-2" />}
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
-
-      {error && (
-        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <span className="block sm:inline">{error}</span>
-          <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={() => setError(null)}>
-            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-              <title>Close</title>
-              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
-            </svg>
-          </span>
-        </div>
-      )}
     </div>
   );
-}
+};
 
 export default App;

@@ -1,11 +1,8 @@
-import { FormData, ApiResponse } from '../types/pension';
+import { PensionFormData, ApiResponse } from '../types/pension';
 import { ENDPOINTS } from '../config/endpoints';
-import { sessionService } from './sessionService';
 
-export const calculatePension = async (formData: FormData): Promise<ApiResponse> => {
+export const calculatePension = async (formData: PensionFormData, sessionId: string): Promise<ApiResponse> => {
   try {
-    const sessionId = sessionService.getOrCreateSessionId();
-
     console.log('URL de cálculo:', ENDPOINTS.calculatePension);
 
     const payload = {

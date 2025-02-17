@@ -1,4 +1,6 @@
-export interface FormData {
+import { Message } from './chat';
+
+export interface PensionFormData {
     nombre: string;
     edad: {
       anos: number;
@@ -71,9 +73,15 @@ export interface Metadata {
   expectativa_vida: number;
 }
 
+interface ChatData {
+  messages: Message[];
+  initialized: boolean;
+}
+
 export interface ApiResponse {
   pre_reforma: PreReforma;
   post_reforma: PostReforma;
   pension_objetivo: PensionObjetivo;
   metadata: Metadata;
+  chatData?: ChatData;
 }

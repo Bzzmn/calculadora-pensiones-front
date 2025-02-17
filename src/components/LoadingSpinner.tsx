@@ -1,18 +1,18 @@
 import { Loader2 } from 'lucide-react';
 
-interface LoadingButtonProps {
+interface LoadingSpinnerProps {
   isLoading: boolean;
   disabled: boolean;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
 }
 
-export const LoadingButton = ({ 
+export const LoadingSpinner = ({ 
   isLoading, 
   disabled, 
   onClick, 
   type = 'submit' 
-}: LoadingButtonProps) => {
+}: LoadingSpinnerProps) => {
   return (
     <button
       type={type}
@@ -44,16 +44,18 @@ export const LoadingButton = ({
           'Recibir informe'
         )}
       </div>
-      <style jsx>{`
-        @keyframes fill {
-          0% {
-            transform: translateX(-100%);
+      <style>
+        {`
+          @keyframes fill {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(0);
+            }
           }
-          100% {
-            transform: translateX(0);
-          }
-        }
-      `}</style>
+        `}
+      </style>
     </button>
   );
 }; 
