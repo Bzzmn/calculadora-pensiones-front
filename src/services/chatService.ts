@@ -45,24 +45,29 @@ export const sendMessageToAgent = async (request: ChatRequest): Promise<string> 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
+      mode: 'cors',
       body: JSON.stringify({
         session_id: sessionId,
-        message: request.message,
-        messageType: request.messageType,
-        pensionData: request.pensionData
+        user_message: request.message,
+        message_type: request.messageType,
+        agent_name: request.agentName
       })
     });
 
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      if (response.status === 403) {
+        throw new Error('Error de permisos CORS');
+      }
+      throw new Error(`Error del servidor: ${response.status}`);
     }
 
     const result = await response.json();
-    return result.message;
+    return result.response;
   } catch (error) {
     console.error('Error en chat service:', error);
-    throw error;
+    return "Lo siento, hay un problema de conexión con el servidor. Por favor, intenta nuevamente en unos momentos.";
   }
 };
 

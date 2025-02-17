@@ -8,7 +8,7 @@ export const ENDPOINTS = {
   calculatePension: `${API_BASE_URL}/calculate_pension`,
   getSession: (sessionId: string) => `${API_BASE_URL}/get_session/${sessionId}`,
   sendEmail: `${API_BASE_URL}/send_email`,
-  sendMessageToAgent: `${API_BASE_URL}/chat/send_message`,
+  sendMessageToAgent: `${N8N_WEBHOOK_URL}`,
   // Nuevos endpoints para el chat
   saveSession: (sessionId: string) => `${API_BASE_URL}/save_session/${sessionId}`,
   getChat: (sessionId: string) => `${API_BASE_URL}/chat/${sessionId}`,

@@ -52,9 +52,10 @@ export interface PensionData {
 }
 
 export interface ChatRequest {
-  messageType: 'user' | 'initial';
+  messageType: 'initial' | 'followup' | 'user';
   message: string;
   pensionData?: PensionData;
+  agentName?: string;
 }
 
 export interface ChatData {

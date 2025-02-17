@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { calculatePension } from '../services/api';
 import { PensionFormData, ApiResponse } from '../types/pension';
+import { Message } from '../types/chat';
 
 interface SessionState {
   sessionId: string | null;
@@ -10,9 +11,14 @@ interface SessionState {
   error: string | null;
   emailSent: boolean;
   userEmail: string | null;
+  chatInitialized: boolean;
+  chatMessages: Message[];
   initializeSession: () => void;
   calculateAndSave: (formData: PensionFormData) => Promise<void>;
   setEmailSent: (sent: boolean, email: string) => void;
+  setChatInitialized: (initialized: boolean) => void;
+  addChatMessage: (message: Message) => void;
+  addChatMessages: (messages: Message[]) => void;
   clearSession: () => void;
 }
 
@@ -25,6 +31,8 @@ export const useSessionStore = create<SessionState>()(
       error: null,
       emailSent: false,
       userEmail: null,
+      chatInitialized: false,
+      chatMessages: [],
 
       initializeSession: () => {
         const currentSession = get().sessionId;
@@ -67,6 +75,18 @@ export const useSessionStore = create<SessionState>()(
         userEmail: email
       }),
 
+      setChatInitialized: (initialized) => set({ 
+        chatInitialized: initialized 
+      }),
+
+      addChatMessage: (message: Message) => set(state => ({
+        chatMessages: [...state.chatMessages, message]
+      })),
+
+      addChatMessages: (messages: Message[]) => set(state => ({
+        chatMessages: [...state.chatMessages, ...messages]
+      })),
+
       clearSession: () => {
         const newSessionId = crypto.randomUUID();
         set({
@@ -74,7 +94,9 @@ export const useSessionStore = create<SessionState>()(
           sessionData: null,
           error: null,
           emailSent: false,
-          userEmail: null
+          userEmail: null,
+          chatInitialized: false,
+          chatMessages: []
         });
       }
     }),
@@ -85,6 +107,8 @@ export const useSessionStore = create<SessionState>()(
         sessionData: state.sessionData,
         emailSent: state.emailSent,
         userEmail: state.userEmail,
+        chatInitialized: state.chatInitialized,
+        chatMessages: state.chatMessages,
       }),
     }
   )

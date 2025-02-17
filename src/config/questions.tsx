@@ -37,7 +37,8 @@ export const questions = [
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Años</label>
             <select
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
+                focus:ring-indigo-500 p-2 border text-xs sm:text-sm md:text-base bg-white"
               value={formData.edad.anos}
               onChange={(e) => setFormData({
                 ...formData,
@@ -45,16 +46,19 @@ export const questions = [
               })}
               required
             >
-              <option value="">Selecciona los años</option>
+              <option value="" className="text-xs sm:text-sm md:text-base">Selecciona los años</option>
               {Array.from({ length: 41 }, (_, i) => i + 25).map((year) => (
-                <option key={year} value={year}>{year} años</option>
+                <option key={year} value={year} className="text-xs sm:text-sm md:text-base">
+                  {year} años
+                </option>
               ))}
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Meses</label>
             <select
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
+                focus:ring-indigo-500 p-2 border text-xs sm:text-sm md:text-base bg-white"
               value={formData.edad.meses}
               onChange={(e) => setFormData({
                 ...formData,
@@ -62,9 +66,11 @@ export const questions = [
               })}
               required
             >
-              <option value="">Selecciona los meses</option>
+              <option value="" className="text-xs sm:text-sm md:text-base">Selecciona los meses</option>
               {Array.from({ length: 12 }, (_, i) => i).map((month) => (
-                <option key={month} value={month}>{month} {month === 1 ? 'mes' : 'meses'}</option>
+                <option key={month} value={month} className="text-xs sm:text-sm md:text-base">
+                  {month} {month === 1 ? 'mes' : 'meses'}
+                </option>
               ))}
             </select>
           </div>
@@ -250,10 +256,11 @@ export const questions = [
             id="nivelEstudios"
             value={formData.nivelEstudios}
             onChange={(e) => setFormData({ ...formData, nivelEstudios: e.target.value })}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
+              focus:ring-indigo-500 p-2 border text-xs sm:text-sm md:text-base bg-white"
             required
           >
-            <option value="">Selecciona una opción</option>
+            <option value="" className="text-xs sm:text-sm md:text-base">Selecciona una opción</option>
             {[
               'Básica',
               'Media',
@@ -262,7 +269,7 @@ export const questions = [
               'Universitaria completa',
               'Postgrado'
             ].map((level) => (
-              <option key={level} value={level}>
+              <option key={level} value={level} className="text-xs sm:text-sm md:text-base">
                 {level}
               </option>
             ))}
