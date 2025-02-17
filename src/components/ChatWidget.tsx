@@ -4,7 +4,7 @@ import { PensionFormData } from '../types/pension';
 import { Message } from '../types/chat';
 import { chatService } from '../services/chatService';
 import { useSessionStore } from '../stores/sessionStore';
-import { useTransition, animated, config } from '@react-spring/web';
+import { useSpring, animated, useTransition } from '@react-spring/web';
 import ReactMarkdown from 'react-markdown';
 
 interface ChatWidgetProps {
@@ -13,6 +13,7 @@ interface ChatWidgetProps {
     messages: Message[];
     initialized: boolean;
   };
+  resultsLoaded?: boolean;
 }
 
 const getAgentAvatar = (gender: string) => {
@@ -21,7 +22,7 @@ const getAgentAvatar = (gender: string) => {
     : 'https://general-images-bucket.s3.sa-east-1.amazonaws.com/calculadorapension/alexandra.webp';
 };
 
-export const ChatWidget = ({ formData }: ChatWidgetProps) => {
+export const ChatWidget = ({ formData, resultsLoaded = false }: ChatWidgetProps) => {
   const { 
     chatInitialized, 
     setChatInitialized, 
@@ -34,6 +35,7 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
   const [showLargeAvatar, setShowLargeAvatar] = useState(false);
   const [showAttentionAnimation, setShowAttentionAnimation] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [showGreenIcon, setShowGreenIcon] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasShownAnimation = useRef(false);
   const attentionTimerRef = useRef<NodeJS.Timeout>();
@@ -66,6 +68,32 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
       setChatInitialized(true);
     }
   }, [isOpen, chatInitialized]);
+
+  // Efecto para activar la animación después de 3 segundos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAttentionAnimation(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    console.log('Estado actual de la animación:', {
+      showAttentionAnimation,
+      chatInitialized,
+      isOpen
+    });
+  }, [showAttentionAnimation, chatInitialized, isOpen]);
+
+  // Efecto para activar el color verde después de 3 segundos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowGreenIcon(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleInitialMessages = async () => {
     console.log('Iniciando mensajes iniciales');
@@ -111,17 +139,8 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
   };
 
   const handleOpen = () => {
-    // Cancelar el timer si existe
-    if (attentionTimerRef.current) {
-      clearTimeout(attentionTimerRef.current);
-    }
     setIsOpen(true);
     setShowAttentionAnimation(false);
-    hasShownAnimation.current = true;
-    // Scroll al abrir con mensajes existentes
-    if (chatMessages.length > 0) {
-      setTimeout(scrollToBottom, 100);
-    }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -164,33 +183,51 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
     }
   };
 
-  const isLastAgentMessage = (index: number) => {
-    // Buscar desde el índice actual hacia adelante
-    for (let i = index + 1; i < chatMessages.length; i++) {
-      if (!chatMessages[i].isUser) {
+  // Función para verificar si es el último mensaje del agente
+  const isLastAgentMessage = (messages: Message[], index: number) => {
+    const reversedIndex = messages.length - 1 - index;
+    for (let i = reversedIndex - 1; i >= 0; i--) {
+      if (!messages[i].isUser) {
         return false;
       }
     }
-    return !chatMessages[index].isUser;
+    return !messages[reversedIndex].isUser;
   };
 
-  const messageTransitions = useTransition(chatMessages, {
-    from: { 
-      opacity: 0, 
-      transform: 'translateY(20px)',
-    },
-    enter: { 
-      opacity: 1, 
-      transform: 'translateY(0px)',
-    },
-    trail: 100 // Delay between each message animation
+  // Transiciones para los mensajes
+  const transitions = useTransition(chatMessages, {
+    keys: (_message: Message, index: number) => index,
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    enter: { opacity: 1, transform: 'translateY(0px)' },
+    config: { tension: 280, friction: 20 }
   });
 
+  // Animaciones de los halos
+  const outerHaloSpring = useSpring({
+    from: { scale: 1, opacity: 0.3 },
+    to: { scale: 1.5, opacity: 0 },
+    loop: true,
+    config: { tension: 100, friction: 10 }
+  });
 
-  const avatarModalTransition = useTransition(showLargeAvatar, {
-    from: { opacity: 0, transform: 'scale(0.95)' },
-    enter: { opacity: 1, transform: 'scale(1)' },
-    leave: { opacity: 0, transform: 'scale(0.95)' },
+  const middleHaloSpring = useSpring({
+    from: { scale: 1, opacity: 0.2 },
+    to: { scale: 1.3, opacity: 0.1 },
+    loop: true,
+    config: { tension: 120, friction: 14 }
+  });
+
+  const innerHaloSpring = useSpring({
+    from: { scale: 1, opacity: 0.15 },
+    to: { scale: 1.2, opacity: 0.05 },
+    loop: true,
+    config: { tension: 140, friction: 18 }
+  });
+
+  // Animación para el modal del avatar
+  const avatarModalSpring = useSpring({
+    opacity: showLargeAvatar ? 1 : 0,
+    transform: showLargeAvatar ? 'scale(1)' : 'scale(0.95)',
     config: { tension: 300, friction: 20 }
   });
 
@@ -200,20 +237,67 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
     setShowLargeAvatar(true);
   };
 
-
   useEffect(() => {
     console.log('Estado actual de mensajes:', chatMessages);
   }, [chatMessages]);
 
+  useEffect(() => {
+    console.log('Estado actual de la animación:', {
+      showAttentionAnimation,
+      hasShownAnimation: hasShownAnimation.current,
+      resultsLoaded,
+      chatInitialized,
+      isOpen
+    });
+  }, [showAttentionAnimation, resultsLoaded, chatInitialized, isOpen]);
+
+  // Animación para el punto de notificación
+  const notificationSpring = useSpring({
+    from: { scale: 0.8, opacity: 0.5 },
+    to: { scale: 1.2, opacity: 1 },
+    config: { tension: 100, friction: 10 },
+    loop: true
+  });
+
   return (
     <div className="fixed bottom-4 right-4 z-40">
       {!isOpen ? (
-        <button
-          onClick={handleOpen}
-          className="bg-indigo-600 text-white rounded-full p-4 shadow-lg hover:bg-indigo-700 transition-colors"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={handleOpen}
+            className={`${showAttentionAnimation ? 'bg-green-600 hover:bg-green-700' : 'bg-indigo-600 hover:bg-indigo-700'} 
+              relative z-10 text-white rounded-full p-4 shadow-lg transition-colors`}
+          >
+            <MessageCircle className="w-6 h-6" />
+            {/* Punto de notificación fijo */}
+            <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-red-500 rounded-full" />
+          </button>
+          {showAttentionAnimation && (
+            <div className="absolute inset-0 z-0">
+              <animated.div 
+                style={{
+                  transform: outerHaloSpring.scale.to(s => `scale(${s})`),
+                  opacity: outerHaloSpring.opacity
+                }}
+                className="absolute inset-0 bg-green-400/30 rounded-full"
+              />
+              <animated.div 
+                style={{
+                  transform: middleHaloSpring.scale.to(s => `scale(${s})`),
+                  opacity: middleHaloSpring.opacity
+                }}
+                className="absolute inset-0 bg-green-400/20 rounded-full"
+              />
+              <animated.div 
+                style={{
+                  transform: innerHaloSpring.scale.to(s => `scale(${s})`),
+                  opacity: innerHaloSpring.opacity
+                }}
+                className="absolute inset-0 bg-green-400/10 rounded-full"
+              />
+            </div>
+          )}
+        </div>
       ) : (
         <div className="fixed inset-0 sm:relative sm:inset-auto flex items-end sm:items-center justify-center sm:block">
           <div className="bg-gray-900 rounded-lg shadow-xl 
@@ -247,50 +331,28 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
               </button>
             </div>
             <div className="flex-1 p-4 overflow-y-auto bg-gray-800/50">
-              {messageTransitions((style, message, _, index) => (
+              {transitions((style, message, t, index) => (
                 <animated.div style={style}>
                   <div className={`mb-1 flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
-                    {!message.isUser && isLastAgentMessage(index) && (
-                      <animated.img 
-                        src={avatarSrc}
-                        alt={agentName}
-                        style={{
-                          ...style,
-                          config: {
-                            tension: 280,
-                            friction: 20,
-                          }
-                        }}
-                        className="w-6 h-6 md:w-8 md:h-8 rounded-full mr-2 self-end"
-                      />
+                    {!message.isUser && (
+                      <div className="w-8 md:w-10 flex-shrink-0 flex items-end">
+                        {isLastAgentMessage(chatMessages, index) && (
+                          <img 
+                            src={avatarSrc}
+                            alt={agentName}
+                            className="w-6 h-6 md:w-8 md:h-8 rounded-full mr-2"
+                          />
+                        )}
+                      </div>
                     )}
                     <div
-                      className={`max-w-[85%] p-3 rounded-lg text-xs sm:text-sm md:text-base leading-snug ${
+                      className={`max-w-[85%] p-3 rounded-lg text-sm ${
                         message.isUser
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-indigo-600 text-white ml-auto'
                           : 'bg-gray-700 text-gray-100'
-                      } ${!message.isUser && !isLastAgentMessage(index) ? 'ml-8 md:ml-10' : ''}`}
+                      }`}
                     >
-                      {message.isUser ? (
-                        <span>{message.content}</span>
-                      ) : (
-                        <ReactMarkdown
-                          className="prose prose-invert max-w-none !leading-snug [&>*]:!my-1 [&_p]:!mb-1 last:[&_p]:!mb-0 [&_ul]:!my-1 [&_ol]:!my-1 [&_li]:!my-0"
-                          components={{
-                            p: ({...props}) => <p className="!my-0 !mb-2 last:!mb-0" {...props} />,
-                            a: ({...props}) => <a className="text-indigo-300 hover:text-indigo-200" {...props} />,
-                            ul: ({...props}) => <ul className="!my-2 !ml-3" {...props} />,
-                            ol: ({...props}) => <ol className="!my-2 !ml-3" {...props} />,
-                            li: ({...props}) => <li className="!my-0" {...props} />,
-                            code: ({...props}) => <code className="bg-gray-800 px-1 py-0.5 rounded" {...props} />,
-                            h1: ({...props}) => <h1 className="!my-1 !mb-1 !text-lg !font-bold" {...props} />,
-                            h2: ({...props}) => <h2 className="!my-1 !mb-1 !text-base !font-bold" {...props} />,
-                            h3: ({...props}) => <h3 className="!my-2 !mb-1 !mt-2 !text-lg !font-bold" {...props} />,
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                      )}
+                      {message.content}
                     </div>
                   </div>
                 </animated.div>
@@ -334,38 +396,36 @@ export const ChatWidget = ({ formData }: ChatWidgetProps) => {
         </div>
       )}
 
-      {avatarModalTransition((style, item) => 
-        item && (
-          <animated.div 
-            style={style}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-            onClick={() => setShowLargeAvatar(false)}
+      {showLargeAvatar && (
+        <animated.div 
+          style={avatarModalSpring}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => setShowLargeAvatar(false)}
+        >
+          <div 
+            className="relative bg-gray-900 p-4 rounded-2xl shadow-xl max-w-sm w-full mx-4"
+            onClick={e => e.stopPropagation()}
           >
-            <div 
-              className="relative bg-gray-900 p-4 rounded-2xl shadow-xl max-w-sm w-full mx-4"
-              onClick={e => e.stopPropagation()}
+            <button
+              onClick={() => setShowLargeAvatar(false)}
+              className="absolute top-2 right-2 text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-colors"
             >
-              <button
-                onClick={() => setShowLargeAvatar(false)}
-                className="absolute top-2 right-2 text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800/50 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              
-              <div className="pt-4">
-                <img 
-                  src={avatarSrc}
-                  alt={agentName}
-                  className="w-48 h-48 rounded-full mx-auto object-cover border-4 border-indigo-500/30"
-                />
-                <div className="text-center mt-4">
-                  <h3 className="text-xl font-semibold text-white">{agentName}</h3>
-                  <p className="text-indigo-300 mt-1">Asistente Virtual</p>
-                </div>
+              <X className="w-6 h-6" />
+            </button>
+            
+            <div className="pt-4">
+              <img 
+                src={avatarSrc}
+                alt={agentName}
+                className="w-48 h-48 rounded-full mx-auto object-cover border-4 border-indigo-500/30"
+              />
+              <div className="text-center mt-4">
+                <h3 className="text-xl font-semibold text-white">{agentName}</h3>
+                <p className="text-indigo-300 mt-1">Asistente Virtual</p>
               </div>
             </div>
-          </animated.div>
-        )
+          </div>
+        </animated.div>
       )}
     </div>
   );
