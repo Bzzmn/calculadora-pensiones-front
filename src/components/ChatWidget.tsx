@@ -5,6 +5,7 @@ import { Message } from "../types/chat";
 import { chatService } from "../services/chatService";
 import { useSessionStore } from "../stores/sessionStore";
 import { PensionFormData, ApiResponse } from "../types/pension";
+import ReactMarkdown from 'react-markdown';
 
 interface ChatWidgetProps {
   formData: PensionFormData;
@@ -226,7 +227,7 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
             min-h-[400px] 
             flex flex-col overflow-hidden"
           >
-            <div className="flex justify-between items-center p-5 border-b border-gray-800 bg-gray-800/50">
+            <div className="flex justify-between items-center p-5 bg-gray-800/50">
               <div className="flex items-center space-x-3">
                 <img
                   src={avatarSrc}
@@ -251,11 +252,11 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
               </button>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto bg-gray-800/50">
+            <div className="flex-1 p-4 overflow-y-auto bg-gray-800/50 space-y-4">
               {transitions((styles, item, _, index) => (
                 <animated.div style={styles}>
                   <div
-                    className={`mb-1 flex ${
+                    className={`flex ${
                       item.isUser ? "justify-end" : "justify-start"
                     }`}
                   >
@@ -277,7 +278,38 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
                           : "bg-gray-700 text-gray-100"
                       }`}
                     >
-                      {item.content}
+                      <ReactMarkdown
+                        components={{
+                          p: ({...props}) => <p className="mb-1 last:mb-0" {...props} />,
+                          a: ({...props}) => (
+                            <a 
+                              className="text-blue-300 hover:text-blue-200" 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              {...props} 
+                            />
+                          ),
+                          ul: ({...props}) => <ul className="ml-4 space-y-0.5" {...props} />,
+                          ol: ({...props}) => <ol className="ml-4 space-y-0.5" {...props} />,
+                          strong: ({...props}) => <strong className="font-semibold" {...props} />,
+                          em: ({...props}) => <em className="italic" {...props} />,
+                          code: ({...props}) => (
+                            <code className="bg-gray-800/50 px-1 rounded" {...props} />
+                          ),
+                          hr: () => <div className="h-4" />,
+                          h1: ({...props}) => (
+                            <h1 className="text-lg font-bold mb-1" {...props} />
+                          ),
+                          h2: ({...props}) => (
+                            <h2 className="text-base font-semibold mb-1" {...props} />
+                          ),
+                          h3: ({...props}) => (
+                            <h3 className="text-base font-medium mb-1" {...props} />
+                          )
+                        }}
+                      >
+                        {item.content}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </animated.div>
