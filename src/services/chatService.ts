@@ -32,6 +32,8 @@ export const buildPensionData = (formData: PensionFormData, apiResponse: ApiResp
   };
 };
 
+const TIMEOUT_DURATION = 10000; // 10 segundos
+
 export const sendMessageToAgent = async (request: ChatRequest): Promise<string> => {
   try {
     const { sessionId } = useSessionStore.getState();
@@ -40,32 +42,51 @@ export const sendMessageToAgent = async (request: ChatRequest): Promise<string> 
       throw new Error('No session ID found');
     }
 
-    const response = await fetch(ENDPOINTS.sendMessageToAgent, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      mode: 'cors',
-      body: JSON.stringify({
-        session_id: sessionId,
-        user_message: request.message,
-        message_type: request.messageType,
-        agent_name: request.agentName
-      })
-    });
+    // Crear un controlador de abort
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
 
-    if (!response.ok) {
-      if (response.status === 403) {
-        throw new Error('Error de permisos CORS');
+    try {
+      const response = await fetch(ENDPOINTS.sendMessageToAgent, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        body: JSON.stringify({
+          session_id: sessionId,
+          user_message: request.message,
+          message_type: request.messageType,
+          agent_name: request.agentName
+        }),
+        signal: controller.signal // Agregar la señal del controlador
+      });
+
+      clearTimeout(timeoutId); // Limpiar el timeout si la petición se completa
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('Error de permisos CORS');
+        }
+        throw new Error(`Error del servidor: ${response.status}`);
       }
-      throw new Error(`Error del servidor: ${response.status}`);
-    }
 
-    const result = await response.json();
-    return result.response;
+      const result = await response.json();
+      return result.response;
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('La petición excedió el tiempo límite de 10 segundos');
+        }
+      }
+      throw error;
+    }
   } catch (error) {
     console.error('Error en chat service:', error);
+    if (error instanceof Error && error.message.includes('tiempo límite')) {
+      return "Lo siento, la respuesta está tardando más de lo esperado. Por favor, intenta nuevamente.";
+    }
     return "Lo siento, hay un problema de conexión con el servidor. Por favor, intenta nuevamente en unos momentos.";
   }
 };
