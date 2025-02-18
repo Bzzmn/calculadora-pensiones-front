@@ -87,7 +87,7 @@ export const sendMessageToAgent = async (request: ChatRequest): Promise<string> 
     if (error instanceof Error && error.message.includes('tiempo límite')) {
       return "Lo siento, la respuesta está tardando más de lo esperado. Por favor, intenta nuevamente.";
     }
-    return "Lo siento, hay un problema de conexión con el servidor. Por favor, intenta nuevamente en unos momentos.";
+    return "Lo siento, hay un problema de conexión. Por favor, intenta nuevamente en unos momentos.";
   }
 };
 
