@@ -322,7 +322,9 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
               </div>
             </div>
 
-            <div className={`flex-1 p-4 md:p-6 overflow-y-auto bg-gray-800/50 space-y-4 min-h-0
+            <div className={`flex-1 p-4 md:p-6 overflow-y-auto bg-gray-800/50 space-y-4
+              min-h-[200px]
+              max-h-[calc(85vh-120px)] sm:max-h-[400px]
               [&::-webkit-scrollbar]:w-2
               [&::-webkit-scrollbar-track]:bg-gray-800/40
               [&::-webkit-scrollbar-thumb]:bg-gray-600
