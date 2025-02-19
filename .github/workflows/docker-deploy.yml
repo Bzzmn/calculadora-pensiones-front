@@ -2,13 +2,13 @@ name: Docker Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/calculadora-pension
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
 
 jobs:
   test-and-build:
@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -58,7 +58,7 @@ jobs:
             ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
           build-args: |
             VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
-            VITE_N8N_WEBHOOK_URL=${{ secrets.VITE_N8N_WEBHOOK_URL }}
+            VITE_CHAT_AGENT_URL=${{ secrets.VITE_CHAT_AGENT_URL }}
           cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:latest
           cache-to: type=inline
 
@@ -69,7 +69,6 @@ jobs:
       needs.build-and-push.result == 'success' && 
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
-    
     steps:
       - name: Trigger deployment in Coolify
         run: |
@@ -92,4 +91,4 @@ jobs:
           echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Deployment completed successfully" >> $GITHUB_STEP_SUMMARY 
+          echo "✅ Deployment completed successfully" >> $GITHUB_STEP_SUMMARY
