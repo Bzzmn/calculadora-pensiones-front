@@ -7,9 +7,9 @@ COPY . .
 
 # Configura las variables de entorno para la construcción
 ARG VITE_API_BASE_URL
-ARG VITE_N8N_WEBHOOK_URL
+ARG VITE_CHAT_AGENT_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
-ENV VITE_N8N_WEBHOOK_URL=${VITE_N8N_WEBHOOK_URL}
+ENV VITE_CHAT_AGENT_URL=${VITE_CHAT_AGENT_URL}
 
 # Construye la aplicación
 RUN npm run build
