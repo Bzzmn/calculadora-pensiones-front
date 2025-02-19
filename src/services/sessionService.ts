@@ -60,22 +60,7 @@ export const sessionService = {
       return null;
     }
   },
-
-  // async saveSessionData(data: ApiResponse & { chatData?: any }): Promise<void> {
-  //   try {
-  //     const sessionId = this.getSessionId();
-  //     const { chatData } = data;
-      
-  //     // Guardar datos del chat en localStorage
-  //     if (chatData) {
-  //       localStorage.setItem(CHAT_DATA_KEY, JSON.stringify(chatData));
-  //     }
-  //   } catch (error) {
-  //     console.error('Error guardando datos de sesión:', error);
-  //     throw error;
-  //   }
-  // },
-
+  
   clearSessionOnly(): void {
     localStorage.removeItem(SESSION_KEY);
   },

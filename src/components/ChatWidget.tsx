@@ -6,6 +6,7 @@ import { chatService } from "../services/chatService";
 import { useSessionStore } from "../stores/sessionStore";
 import { PensionFormData, ApiResponse } from "../types/pension";
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 interface ChatWidgetProps {
   formData: PensionFormData;
@@ -36,12 +37,16 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
   const avatarSrc = getAgentAvatar(formData?.genero || "Masculino");
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages, isTyping]);
+    if (isOpen) {
+      setTimeout(scrollToBottom, 0);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && chatMessages.length > 0) {
@@ -344,24 +349,32 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
                       </div>
                     )}
                     <div
-                      className={`max-w-[85%] p-3 rounded-lg text-sm ${
+                      className={`rounded-lg px-4 py-2 max-w-[85%] ${
                         item.isUser
-                          ? "bg-indigo-600 text-white ml-auto"
-                          : "bg-gray-700 text-gray-100"
+                          ? 'bg-cyan-800 text-white'
+                          : 'bg-gray-800 text-gray-100'
                       }`}
                     >
                       <ReactMarkdown
+                        rehypePlugins={[rehypeRaw]}
+                        className={`prose prose-invert max-w-none break-words
+                          ${item.isUser ? 'text-white' : 'text-gray-100'}`}
                         components={{
                           p: ({...props}) => <p className="mb-1 last:mb-0" {...props} />,
-                          a: ({...props}) => (
-                            <a 
-                              className="text-blue-300 hover:text-blue-200" 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              {...props} 
-                            />
+                          a: ({children, href, ...props}) => (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-400 hover:text-indigo-300 underline"
+                              {...props}
+                            >
+                              {children}
+                            </a>
                           ),
-                          ul: ({...props}) => <ul className="ml-4 space-y-0.5" {...props} />,
+                          ul: ({...props}) => (
+                            <ul className="list-disc pl-4 space-y-2 my-4" {...props} />
+                          ),
                           ol: ({...props}) => <ol className="ml-4 space-y-0.5" {...props} />,
                           strong: ({...props}) => <strong className="font-semibold" {...props} />,
                           em: ({...props}) => <em className="italic" {...props} />,
@@ -373,11 +386,17 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
                             <h1 className="text-lg font-bold mb-1" {...props} />
                           ),
                           h2: ({...props}) => (
-                            <h2 className="text-base font-semibold mb-1" {...props} />
+                            <h2 className="text-xl font-bold my-4 text-gray-100" {...props} />
                           ),
                           h3: ({...props}) => (
                             <h3 className="text-base font-medium mb-1" {...props} />
-                          )
+                          ),
+                          blockquote: ({...props}) => (
+                            <blockquote 
+                              className="border-l-4 border-gray-600 pl-4 my-4 italic text-gray-300"
+                              {...props}
+                            />
+                          ),
                         }}
                       >
                         {item.content}
@@ -426,6 +445,19 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
                 </button>
               </div>
             </form>
+
+            {/* Créditos */}
+            <div className="text-center text-xs text-gray-400  pb-2 bg-gray-800 rounded-lg">
+              Desarrollado por{' '}
+              <a 
+                href="https://thefullstack.digital?utm_source=calculadora_pensiones&utm_medium=chat&utm_campaign=previsional" 
+                target="_blank" 
+                rel="noopener"
+                className="text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                The_FullStack
+              </a>
+            </div>
           </div>
         </div>
       )}

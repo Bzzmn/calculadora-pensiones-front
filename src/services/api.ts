@@ -1,12 +1,12 @@
 import { PensionFormData, ApiResponse } from '../types/pension';
 import { ENDPOINTS } from '../config/endpoints';
-
-
-const controller = new AbortController();   
-const timeoutId = setTimeout(() => controller.abort(), 10000);
-
+import { TIMEOUTS } from '../config/timeouts'
 
 export const calculatePension = async (formData: PensionFormData, sessionId: string): Promise<ApiResponse> => {
+  const startTime = Date.now();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.API_REQUEST);
+
   try {
     console.log('URL de cálculo:', ENDPOINTS.calculatePension);
 
@@ -46,6 +46,13 @@ export const calculatePension = async (formData: PensionFormData, sessionId: str
     const data = await response.json();
     return data;
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        const elapsedTime = Date.now() - startTime;
+        console.log(`Cálculo abortado después de ${elapsedTime}ms`);
+        throw new Error('El cálculo excedió el tiempo límite de espera');
+      }
+    }
     console.error('Error completo:', error);
     throw error;
   } finally {

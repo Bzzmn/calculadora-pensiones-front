@@ -2,6 +2,7 @@ import { ChatRequest, PensionData } from '../types/chat';
 import { ENDPOINTS } from '../config/endpoints';
 import { PensionFormData, ApiResponse } from '../types/pension';
 import { useSessionStore } from '../stores/sessionStore';
+import { TIMEOUTS } from '../config/timeouts';
 
 const getAgentName = (gender: 'Masculino' | 'Femenino'): string => {
   return gender === 'Masculino' ? 'Alexandra' : 'Alejandro';
@@ -32,9 +33,11 @@ export const buildPensionData = (formData: PensionFormData, apiResponse: ApiResp
   };
 };
 
-const TIMEOUT_DURATION = 10000; // 10 segundos
-
 export const sendMessageToAgent = async (request: ChatRequest): Promise<string> => {
+  const startTime = Date.now();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.CHAT_REQUEST);
+
   try {
     const { sessionId } = useSessionStore.getState();
     
@@ -42,52 +45,43 @@ export const sendMessageToAgent = async (request: ChatRequest): Promise<string> 
       throw new Error('No session ID found');
     }
 
-    // Crear un controlador de abort
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
+    const response = await fetch(ENDPOINTS.sendMessageToAgent, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
+      body: JSON.stringify({
+        session_id: sessionId,
+        user_message: request.message,
+        message_type: request.messageType,
+        agent_name: request.agentName
+      }),
+      signal: controller.signal
+    });
 
-    try {
-      const response = await fetch(ENDPOINTS.sendMessageToAgent, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        mode: 'cors',
-        body: JSON.stringify({
-          session_id: sessionId,
-          user_message: request.message,
-          message_type: request.messageType,
-          agent_name: request.agentName
-        }),
-        signal: controller.signal // Agregar la señal del controlador
-      });
-
-      clearTimeout(timeoutId); // Limpiar el timeout si la petición se completa
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error('Error de permisos CORS');
-        }
-        throw new Error(`Error del servidor: ${response.status}`);
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error('Error de permisos CORS');
       }
-
-      const result = await response.json();
-      return result.response;
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new Error('La petición excedió el tiempo límite de 10 segundos');
-        }
-      }
-      throw error;
+      throw new Error(`Error del servidor: ${response.status}`);
     }
+
+    const result = await response.json();
+    return result.response;
   } catch (error) {
-    console.error('Error en chat service:', error);
-    if (error instanceof Error && error.message.includes('tiempo límite')) {
-      return "Lo siento, la respuesta está tardando más de lo esperado. Por favor, intenta nuevamente.";
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        const elapsedTime = Date.now() - startTime;
+        console.log(`Request abortada después de ${elapsedTime}ms`);
+        
+        return "Lo siento, la respuesta está tardando más de lo esperado. Por favor, intenta nuevamente.";
+      }
     }
     return "Lo siento, hay un problema de conexión. Por favor, intenta nuevamente en unos momentos.";
+  } finally {
+    clearTimeout(timeoutId);
   }
 };
 
