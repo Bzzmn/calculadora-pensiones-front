@@ -17,6 +17,7 @@ export const App = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const [formData, setFormData] = useState<PensionFormData>(initialFormData);
+  const [showValidation, setShowValidation] = useState(false);
   
   const {  
     sessionData, 
@@ -65,6 +66,13 @@ export const App = () => {
   };
 
   const handleNext = () => {
+    setShowValidation(true);
+    
+    if (!questions[currentStep]?.isValid(formData)) {
+      return;
+    }
+    
+    setShowValidation(false);
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -85,6 +93,13 @@ export const App = () => {
     setCurrentStep(0);
     setShowSummary(false);
     setFormData(initialFormData);
+  };
+
+  const handleCalculate = () => {
+    // Scroll instantáneo hacia arriba
+    window.scrollTo(0, 0);
+    // Tu lógica actual para calcular
+    handleCalculatePension();
   };
 
   return (
@@ -131,14 +146,18 @@ export const App = () => {
             ) : sessionData ? (
               <Results response={sessionData} onRecalculate={handleRecalculate} />
             ) : showSummary ? (
-              <Summary formData={formData} onPrevious={handlePrevious} onCalculate={handleCalculatePension} />
+              <Summary 
+                formData={formData} 
+                onPrevious={() => setShowSummary(false)} 
+                onCalculate={handleCalculate}
+              />
             ) : (
               <div className="space-y-6">
                 <h2 className="text-xl sm:text-2xl lg:text-xl font-semibold text-gray-900 mb-4">
                   {questions[currentStep]?.title}
                 </h2>
                 <div className="flex-1 flex flex-col justify-center">
-                  {questions[currentStep]?.component(formData, setFormData)}
+                  {questions[currentStep]?.component(formData, setFormData, showValidation)}
                 </div>
                 <div className="flex justify-between mt-4 sm:mt-8">
                   <button
@@ -151,11 +170,14 @@ export const App = () => {
                   </button>
                   <button
                     onClick={handleNext}
-                    className="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                    disabled={!questions[currentStep]?.isValid(formData)}
+                    className={`inline-flex items-center px-8 py-3 border border-transparent rounded-md shadow-sm 
+                      text-base font-medium text-white
+                      ${questions[currentStep]?.isValid(formData) 
+                        ? 'bg-indigo-600 hover:bg-indigo-700' 
+                        : 'bg-indigo-400'}`}
                   >
                     {currentStep === questions.length - 1 ? 'Revisar' : 'Siguiente'}
-                    {currentStep < questions.length - 1 && <ArrowRight className="w-4 h-4 ml-2" />}
+                    {currentStep < questions.length - 1 && <ArrowRight className="w-5 h-5 ml-2" />}
                   </button>
                 </div>
               </div>

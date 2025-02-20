@@ -4,15 +4,17 @@ import React from 'react';
 export const questions = [
   {
     title: "¿Cuál es tu nombre?",
-    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
-      <div className="h-[120px] sm:h-auto mb-8 sm:mb-0 flex flex-col justify-center">
+    component: (
+      formData: PensionFormData, 
+      setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>, 
+      showValidation: boolean
+    ) => (
+      <div className="space-y-2">
         <input
           type="text"
-          name="firstname"
-          id="firstname"
-          autoComplete="given-name"
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-            focus:border-indigo-500 focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
+          className={`mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 
+            focus:ring-indigo-500 text-base sm:text-lg p-2 border
+            ${showValidation && !formData.nombre ? 'border-red-500' : 'border-gray-300'}`}
           value={formData.nombre}
           onChange={(e) => {
             const value = e.target.value;
@@ -26,24 +28,26 @@ export const questions = [
           placeholder="Ingresa tu nombre"
           required
         />
+        {showValidation && !formData.nombre && (
+          <p className="text-sm text-red-600">
+            Por favor, ingresa tu nombre
+          </p>
+        )}
       </div>
     ),
-    isValid: (formData: PensionFormData) => {
-      // Validate that name has at least 2 characters, starts with uppercase and contains only letters
-      return formData.nombre.length >= 2 && 
-             /^[A-Z][a-zÀ-ÿ\s]*$/.test(formData.nombre);
-    }
+    isValid: (formData: PensionFormData) => formData.nombre.length >= 2
   },
   {
     title: "¿Cuál es tu edad?",
-    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>, showValidation: boolean) => (
       <div className="h-[180px] sm:h-auto space-y-4 flex flex-col justify-center">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Años</label>
             <select
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
-                focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border bg-white"
+              className={`block w-full rounded-md shadow-sm focus:border-indigo-500 
+                focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border bg-white
+                ${showValidation && !formData.edad.anos ? 'border-red-500' : 'border-gray-300'}`}
               value={formData.edad.anos}
               onChange={(e) => setFormData({
                 ...formData,
@@ -51,13 +55,16 @@ export const questions = [
               })}
               required
             >
-              <option value="" className="text-base sm:text-lg lg:text-base">Selecciona los años</option>
+              <option value="">Selecciona los años</option>
               {Array.from({ length: 41 }, (_, i) => i + 25).map((year) => (
                 <option key={year} value={year} className="text-base sm:text-lg lg:text-base">
                   {year} años
                 </option>
               ))}
             </select>
+            {showValidation && !formData.edad.anos && (
+              <p className="mt-2 text-sm text-red-600">Por favor selecciona los años</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Meses</label>
@@ -94,7 +101,11 @@ export const questions = [
   },
   {
     title: "¿Cuál es tu género?",
-    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
+    component: (
+      formData: PensionFormData, 
+      setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>,
+      showValidation: boolean
+    ) => (
       <div className="mt-1 space-y-4">
         {['Masculino', 'Femenino'].map((option) => (
           <label key={option} className="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
@@ -110,6 +121,11 @@ export const questions = [
             <span className="ml-3 text-lg">{option}</span>
           </label>
         ))}
+        {showValidation && !formData.genero && (
+          <p className="text-sm text-red-600">
+            Por favor, elige una opción
+          </p>
+        )}
       </div>
     ),
     isValid: (formData: PensionFormData) => formData.genero !== ''
@@ -140,7 +156,11 @@ export const questions = [
   },
   {
     title: "¿Cuál es tu total acumulado en tu cuenta de capitalización individual?",
-    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
+    component: (
+      formData: PensionFormData, 
+      setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>,
+      showValidation: boolean
+    ) => (
       <div className="space-y-4">
         <div className="mt-1 relative rounded-md shadow-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -150,8 +170,9 @@ export const questions = [
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 
-              focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
+            className={`block w-full pl-7 pr-12 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
+              focus:ring-indigo-500 text-base sm:text-lg p-2 border
+              ${showValidation && !formData.capitalIndividual ? 'border-red-500' : 'border-gray-300'}`}
             placeholder="0"
             value={formData.capitalIndividual ? formData.capitalIndividual.toLocaleString('es-CL') : ''}
             onChange={(e) => {
@@ -169,6 +190,12 @@ export const questions = [
             <span className="text-gray-500 sm:text-sm">CLP</span>
           </div>
         </div>
+
+        {showValidation && !formData.capitalIndividual && (
+          <p className="text-sm text-red-600">
+            Debes indicar un monto
+          </p>
+        )}
 
         <p className="text-sm text-gray-600">
           Puedes consultar el saldo de tu cuenta de capitalización individual con tu Clave Única en la{' '}
@@ -188,41 +215,52 @@ export const questions = [
   },
   {
     title: "¿Cuál es tu salario bruto actual?",
-    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
-      <div className="mt-1 relative rounded-md shadow-sm mb-8 sm:mb-12">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span className="text-gray-500 sm:text-sm">$</span>
+    component: (
+      formData: PensionFormData, 
+      setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>, 
+      showValidation: boolean
+    ) => (
+      <div className="space-y-2">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span className="text-gray-500 sm:text-sm">$</span>
+          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            className={`block w-full pl-7 pr-12 rounded-md shadow-sm focus:border-indigo-500 
+              focus:ring-indigo-500 text-base sm:text-lg p-2 border
+              ${showValidation && !formData.salarioBruto ? 'border-red-500' : 'border-gray-300'}`}
+            placeholder="0"
+            value={formData.salarioBruto ? formData.salarioBruto.toLocaleString('es-CL') : ''}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '');
+              if (value.length <= 7) {
+                setFormData({ 
+                  ...formData, 
+                  salarioBruto: value ? parseInt(value) : 0 
+                });
+              }
+            }}
+            required
+          />
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <span className="text-gray-500 sm:text-sm">CLP</span>
+          </div>
         </div>
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 
-            focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
-          placeholder="0"
-          value={formData.salarioBruto ? formData.salarioBruto.toLocaleString('es-CL') : ''}
-          onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, '');
-            if (value.length <= 7) {
-              setFormData({ 
-                ...formData, 
-                salarioBruto: value ? parseInt(value) : 0 
-              });
-            }
-          }}
-          required
-        />
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-          <span className="text-gray-500 sm:text-sm">CLP</span>
-        </div>
+        {showValidation && !formData.salarioBruto && (
+          <p className="text-sm text-red-600">
+            Por favor, ingresa tu salario bruto actual
+          </p>
+        )}
       </div>
     ),
-    isValid: (formData: PensionFormData) => formData.salarioBruto > 0 && 
-                                          formData.salarioBruto.toString().length <= 7
+    isValid: (formData: PensionFormData) => formData.salarioBruto > 0
   },
   {
     title: "Si te retiraras hoy, ¿cuál sería tu monto ideal de pensión mensual?",
-    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>, showValidation: boolean) => (
       <div className="space-y-4">
         <div className="space-y-2">
           <ul className="list-disc pl-5 space-y-1">
@@ -234,14 +272,16 @@ export const questions = [
             </li>
           </ul>
         </div>
-        <div className="relative rounded-md shadow-sm">
+        <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <span className="text-gray-500 sm:text-sm">$</span>
           </div>
           <input
             type="text"
             inputMode="numeric"
-            className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
+            className={`block w-full pl-7 pr-12 rounded-md shadow-sm focus:border-indigo-500 
+              focus:ring-indigo-500 text-base sm:text-lg p-2 border
+              ${showValidation && !formData.pensionIdeal ? 'border-red-500' : 'border-gray-300'}`}
             placeholder="0"
             value={formData.pensionIdeal ? formData.pensionIdeal.toLocaleString('es-CL') : ''}
             onChange={(e) => {
@@ -259,6 +299,11 @@ export const questions = [
             <span className="text-gray-500 sm:text-sm">CLP</span>
           </div>
         </div>
+        {showValidation && !formData.pensionIdeal && (
+          <p className="text-sm text-red-600">
+            Debes ingresar un monto
+          </p>
+        )}
       </div>
     ),
     isValid: (formData: PensionFormData) => formData.pensionIdeal > 0 && 
@@ -266,7 +311,7 @@ export const questions = [
   },
   {
     title: "¿Cuál es tu nivel de estudios?",
-    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
+    component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>, showValidation: boolean) => (
       <div className="space-y-4">
         <div className="mb-8 sm:mb-12">
           <label htmlFor="nivelEstudios" className="block text-sm font-medium text-gray-700 mb-3">
@@ -276,11 +321,12 @@ export const questions = [
             id="nivelEstudios"
             value={formData.nivelEstudios}
             onChange={(e) => setFormData({ ...formData, nivelEstudios: e.target.value })}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
-              focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border bg-white"
+            className={`block w-full rounded-md shadow-sm focus:border-indigo-500 
+              focus:ring-indigo-500 text-base sm:text-lg p-2 border bg-white
+              ${showValidation && !formData.nivelEstudios ? 'border-red-500' : 'border-gray-300'}`}
             required
           >
-            <option value="" className="text-base sm:text-lg lg:text-base">
+            <option value="" className="text-base sm:text-lg">
               Selecciona una opción
             </option>
             {[
@@ -291,11 +337,16 @@ export const questions = [
               'Media',
               'Básica'
             ].map((level) => (
-              <option key={level} value={level} className="text-base sm:text-lg lg:text-base">
+              <option key={level} value={level} className="text-base sm:text-lg">
                 {level}
               </option>
             ))}
           </select>
+          {showValidation && !formData.nivelEstudios && (
+            <p className="mt-2 text-sm text-red-600">
+              Debes elegir una opción
+            </p>
+          )}
         </div>
       </div>
     ),
