@@ -39,10 +39,18 @@ export const sendMessageToAgent = async (request: ChatRequest): Promise<string> 
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.CHAT_REQUEST);
 
   try {
-    const { sessionId } = useSessionStore.getState();
+    const { sessionId, userData } = useSessionStore.getState();
     
-    if (!sessionId) {
-      throw new Error('No session ID found');
+    console.log('Request data:', {
+      sessionId,
+      message: request.message,
+      messageType: request.messageType,
+      agentName: request.agentName,
+      userData
+    });
+
+    if (!sessionId || !userData) {
+      throw new Error('No session data found');
     }
 
     const response = await fetch(ENDPOINTS.sendMessageToAgent, {
@@ -56,7 +64,8 @@ export const sendMessageToAgent = async (request: ChatRequest): Promise<string> 
         session_id: sessionId,
         user_message: request.message,
         message_type: request.messageType,
-        agent_name: request.agentName
+        agent_name: request.agentName,
+        user_data: userData
       }),
       signal: controller.signal
     });
@@ -69,6 +78,8 @@ export const sendMessageToAgent = async (request: ChatRequest): Promise<string> 
     }
 
     const result = await response.json();
+    console.log('Response data:', result);
+
     return result.response;
   } catch (error) {
     if (error instanceof Error) {

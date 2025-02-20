@@ -280,12 +280,13 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
             </p>
             <div className="space-y-2">
               <p className="text-sm text-gray-600 font-medium">
-                Las estimaciones del presente informe están realizadas bajo los mismos supuestos que se utilizaron para realizar los estudios de la actual ley de pensiones que son los siguientes:
+                Las estimaciones del presente informe están realizadas bajo los mismos supuestos que se utilizaron para realizar los estudios de la actual ley de pensiones, salvo el crecimiento de salarios que se ha ajustado a un 5% anual:
               </p>
               <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
-                <li>Crecimiento de salarios de 1,25% de acuerdo con proyección de la OCDE.</li>
-                <li>Rentabilidad del fondo equivalente a 3,91%.</li>
-                <li>Retornos de los fondos de pensiones en base al promedio histórico y que la tasa implícita de las rentas vitalicias es de 3,11%.</li>
+                <li>Crecimiento de salarios de 5% anual ajustado trimestralmente.</li>
+                <li>Rentabilidad del fondo equivalente a 3,91% anual.</li>
+                <li>Retornos de los fondos de pensiones en base al promedio histórico y que la tasa implícita de las rentas vitalicias es de 3,11% anual.</li>
+                <li>Tasa de inflación de 3% anual.</li>
               </ul>
             </div>
           </div>

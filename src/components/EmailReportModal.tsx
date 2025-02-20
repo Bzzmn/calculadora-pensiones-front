@@ -18,7 +18,7 @@ interface EmailReportModalProps {
 export const EmailReportModal = ({ isOpen, onClose }: EmailReportModalProps) => {
   const [email, setEmail] = useState('');
   const [optIn, setOptIn] = useState(false);
-  const { emailSent, setEmailSent, userEmail } = useSessionStore();
+  const { emailSent, setEmailSent } = useSessionStore();
   const [status, setStatus] = useState<{
     type: 'error' | 'success' | 'info' | null;
     message: string;
@@ -31,17 +31,14 @@ export const EmailReportModal = ({ isOpen, onClose }: EmailReportModalProps) => 
     return emailRegex.test(email);
   };
 
-  // Establecer el estado inicial cuando se abre el modal
   useEffect(() => {
-    if (emailSent && userEmail) {
-      setEmail(userEmail);
-      setOptIn(true);
+    if (emailSent) {
       setStatus({
         type: 'info',
         message: 'Ya te enviamos el informe. Revisa tu bandeja de entrada o spam.'
       });
     }
-  }, [emailSent, userEmail, isOpen]);
+  }, [emailSent, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +66,7 @@ export const EmailReportModal = ({ isOpen, onClose }: EmailReportModalProps) => 
       setIsSent(false);
       setEmail('');
       setOptIn(false);
-      setEmailSent(true, email);
+      setEmailSent(true);
     }, 4000);
   };
 
@@ -125,7 +122,7 @@ export const EmailReportModal = ({ isOpen, onClose }: EmailReportModalProps) => 
                         <li>• Recomendaciones personalizadas realizadas con IA</li>
                       </ul>
                       <p className="mt-6 text-sm text-indigo-700 mr-3">
-                        <span className="font-bold">A cambio te pedimos que te suscribas a nuestro newsletter.</span>
+                        <span className="font-bold">A cambio te pedimos que te suscribas a nuestro newsletter. Tenemos mucho que contarte de tecnologia, IA, y mucho más! 🤩.</span>
                       </p>
                     </div>
                   </div>

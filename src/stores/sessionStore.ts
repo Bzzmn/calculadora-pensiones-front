@@ -11,12 +11,20 @@ interface SessionState {
   isLoading: boolean;
   error: string | null;
   emailSent: boolean;
-  userEmail: string | null;
   chatInitialized: boolean;
   chatMessages: Message[];
+  userData: {
+    nombre: string;
+    genero: 'Masculino' | 'Femenino';
+    edad: {
+      anos: number;
+      meses: number;
+    };
+    nivelEstudios: string;
+  } | null;
   initializeSession: () => void;
   calculateAndSave: (formData: PensionFormData) => Promise<void>;
-  setEmailSent: (sent: boolean, email: string) => void;
+  setEmailSent: (sent: boolean) => void;
   setChatInitialized: (initialized: boolean) => void;
   addChatMessage: (message: Message) => void;
   addChatMessages: (messages: Message[]) => void;
@@ -31,9 +39,9 @@ export const useSessionStore = create<SessionState>()(
       isLoading: false,
       error: null,
       emailSent: false,
-      userEmail: null,
       chatInitialized: false,
       chatMessages: [],
+      userData: null,
 
       initializeSession: () => {
         const currentSession = get().sessionId;
@@ -57,6 +65,15 @@ export const useSessionStore = create<SessionState>()(
           
           set({
             sessionData: result,
+            userData: formData.genero ? {
+              nombre: formData.nombre,
+              genero: formData.genero as 'Masculino' | 'Femenino',
+              edad: {
+                anos: formData.edad.anos,
+                meses: formData.edad.meses
+              },
+              nivelEstudios: formData.nivelEstudios
+            } : null,
             isLoading: false,
             error: null
           });
@@ -71,9 +88,8 @@ export const useSessionStore = create<SessionState>()(
         }
       },
 
-      setEmailSent: (sent, email) => set({ 
-        emailSent: sent,
-        userEmail: email
+      setEmailSent: (sent) => set({ 
+        emailSent: sent 
       }),
 
       setChatInitialized: (initialized) => set({ 
@@ -95,9 +111,9 @@ export const useSessionStore = create<SessionState>()(
           sessionData: null,
           error: null,
           emailSent: false,
-          userEmail: null,
           chatInitialized: false,
-          chatMessages: []
+          chatMessages: [],
+          userData: null
         });
       }
     }),
@@ -107,9 +123,9 @@ export const useSessionStore = create<SessionState>()(
         sessionId: state.sessionId,
         sessionData: state.sessionData,
         emailSent: state.emailSent,
-        userEmail: state.userEmail,
         chatInitialized: state.chatInitialized,
         chatMessages: state.chatMessages,
+        userData: state.userData,
       }),
     }
   )

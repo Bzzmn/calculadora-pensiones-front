@@ -4,14 +4,13 @@ import { useTransition, animated, useSpring } from "@react-spring/web";
 import { Message } from "../types/chat";
 import { chatService } from "../services/chatService";
 import { useSessionStore } from "../stores/sessionStore";
-import { PensionFormData, ApiResponse } from "../types/pension";
+import { PensionFormData } from "../types/pension";
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 
 interface ChatWidgetProps {
   formData: PensionFormData;
   resultsLoaded?: boolean;
-  apiResponse: ApiResponse;
 }
 
 const getAgentAvatar = (gender: string) => {
@@ -131,7 +130,7 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
       const response = await chatService.sendMessageToAgent({
         messageType: "user",
         message: userMessage.content,
-        agentName: agentName,
+        agentName: agentName
       });
 
       const agentMessage: Message = {
@@ -220,6 +219,28 @@ export const ChatWidget = ({ formData, resultsLoaded }: ChatWidgetProps) => {
       document.body.style.width = '';
       window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Obtener el meta tag existente o crear uno nuevo
+    let metaThemeColor = document.querySelector("meta[name=theme-color]");
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(metaThemeColor);
+    }
+
+    // Cambiar el color según el estado del chat
+    if (isOpen) {
+      metaThemeColor.setAttribute('content', '#111827'); // bg-gray-900
+    } else {
+      metaThemeColor.setAttribute('content', '#EEF2FF'); // bg-indigo-50
+    }
+
+    // Limpiar al desmontar
+    return () => {
+      metaThemeColor.setAttribute('content', '#EEF2FF');
+    };
   }, [isOpen]);
 
   return (
