@@ -1,24 +1,30 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Calculadora de Pensiones" />
+    <meta property="og:description" content="Conoce cómo la reforma previsional afectará tu pensión" />
+    <meta property="og:image" content="https://general-images-bucket.s3.sa-east-1.amazonaws.com/pension.webp" />
+    
+    <title>Calculadora de Pensiones</title>
+    <meta name="theme-color" content="#EEF2FF">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CZF4S0MVF8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Calculadora de Pensiones" />
-  <meta property="og:description" content="Conoce cómo la reforma previsional afectará tu pensión" />
-  <meta property="og:image" content="https://general-images-bucket.s3.sa-east-1.amazonaws.com/pension.webp" />
-  
-  <title>Calculadora de Pensiones</title>
-  <meta name="theme-color" content="#EEF2FF">
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+      gtag('config', 'G-CZF4S0MVF8');
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
