@@ -61,4 +61,10 @@ export interface ChatRequest {
 export interface ChatData {
   messages: Message[];
   initialized: boolean;
+}
+
+export interface ChatWidgetProps {
+  formData: PensionFormData;
+  apiResponse?: ApiResponse;
+  resultsLoaded: boolean;
 } 

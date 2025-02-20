@@ -219,7 +219,7 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
                       <span className="absolute bottom-0 left-4 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></span>
                     </span>
                   </p>
-                  <p className="text-base sm:text-lg font-bold text-purple-900">
+                  <p className="text-xl sm:text-2xl font-bold text-purple-900 bg-purple-50 px-4 py-2 rounded-lg border-2 border-purple-200">
                     {formatCurrency(response.pension_objetivo.brecha_mensual_post_reforma)}
                   </p>
                 </div>
@@ -317,7 +317,6 @@ export const Results = ({ response, onRecalculate }: ResultsProps) => {
           pensionIdeal: response.pension_objetivo?.valor_presente || 0,
           nivelEstudios: response.metadata?.estudios || ''
         }}
-        apiResponse={response}
         resultsLoaded={resultsLoaded}
       />
     </div>

@@ -5,23 +5,28 @@ export const questions = [
   {
     title: "¿Cuál es tu nombre?",
     component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
-      <input
-        type="text"
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-        value={formData.nombre}
-        onChange={(e) => {
-          const value = e.target.value;
-          // Only allow letters and spaces
-          if (/^[A-Za-zÀ-ÿ\s]*$/.test(value)) {
-            setFormData({ 
-              ...formData, 
-              nombre: value.replace(/^\w/, (c) => c.toUpperCase()) 
-            });
-          }
-        }}
-        placeholder="Ingresa tu nombre"
-        required
-      />
+      <div className="h-[120px] sm:h-auto mb-8 sm:mb-0 flex flex-col justify-center">
+        <input
+          type="text"
+          name="firstname"
+          id="firstname"
+          autoComplete="given-name"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+            focus:border-indigo-500 focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
+          value={formData.nombre}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^[A-Za-zÀ-ÿ\s]*$/.test(value)) {
+              setFormData({ 
+                ...formData, 
+                nombre: value.replace(/^\w/, (c) => c.toUpperCase()) 
+              });
+            }
+          }}
+          placeholder="Ingresa tu nombre"
+          required
+        />
+      </div>
     ),
     isValid: (formData: PensionFormData) => {
       // Validate that name has at least 2 characters, starts with uppercase and contains only letters
@@ -32,13 +37,13 @@ export const questions = [
   {
     title: "¿Cuál es tu edad?",
     component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
-      <div className="space-y-4">
+      <div className="h-[180px] sm:h-auto space-y-4 flex flex-col justify-center">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Años</label>
             <select
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
-                focus:ring-indigo-500 p-2 border text-xs sm:text-sm md:text-base bg-white"
+                focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border bg-white"
               value={formData.edad.anos}
               onChange={(e) => setFormData({
                 ...formData,
@@ -46,9 +51,9 @@ export const questions = [
               })}
               required
             >
-              <option value="" className="text-xs sm:text-sm md:text-base">Selecciona los años</option>
+              <option value="" className="text-base sm:text-lg lg:text-base">Selecciona los años</option>
               {Array.from({ length: 41 }, (_, i) => i + 25).map((year) => (
-                <option key={year} value={year} className="text-xs sm:text-sm md:text-base">
+                <option key={year} value={year} className="text-base sm:text-lg lg:text-base">
                   {year} años
                 </option>
               ))}
@@ -58,7 +63,7 @@ export const questions = [
             <label className="block text-sm font-medium text-gray-700 mb-1">Meses</label>
             <select
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
-                focus:ring-indigo-500 p-2 border text-xs sm:text-sm md:text-base bg-white"
+                focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border bg-white"
               value={formData.edad.meses}
               onChange={(e) => setFormData({
                 ...formData,
@@ -66,9 +71,9 @@ export const questions = [
               })}
               required
             >
-              <option value="" className="text-xs sm:text-sm md:text-base">Selecciona los meses</option>
+              <option value="" className="text-base sm:text-lg lg:text-base">Selecciona los meses</option>
               {Array.from({ length: 12 }, (_, i) => i).map((month) => (
-                <option key={month} value={month} className="text-xs sm:text-sm md:text-base">
+                <option key={month} value={month} className="text-base sm:text-lg lg:text-base">
                   {month} {month === 1 ? 'mes' : 'meses'}
                 </option>
               ))}
@@ -137,22 +142,26 @@ export const questions = [
     title: "¿Cuál es tu total acumulado en tu cuenta de capitalización individual?",
     component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="space-y-4">
-
         <div className="mt-1 relative rounded-md shadow-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <span className="text-gray-500 sm:text-sm">$</span>
           </div>
           <input
             type="text"
-            className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 
+              focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
             placeholder="0"
             value={formData.capitalIndividual ? formData.capitalIndividual.toLocaleString('es-CL') : ''}
             onChange={(e) => {
               const value = e.target.value.replace(/\D/g, '');
-              setFormData({ 
-                ...formData, 
-                capitalIndividual: value ? parseInt(value) : 0 
-              });
+              if (value.length <= 9) {
+                setFormData({ 
+                  ...formData, 
+                  capitalIndividual: value ? parseInt(value) : 0 
+                });
+              }
             }}
             required
           />
@@ -174,26 +183,32 @@ export const questions = [
         </p>
       </div>
     ),
-    isValid: (formData: PensionFormData) => formData.capitalIndividual > 0
+    isValid: (formData: PensionFormData) => formData.capitalIndividual > 0 && 
+                                          formData.capitalIndividual.toString().length <= 9
   },
   {
     title: "¿Cuál es tu salario bruto actual?",
     component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
-      <div className="mt-1 relative rounded-md shadow-sm">
+      <div className="mt-1 relative rounded-md shadow-sm mb-8 sm:mb-12">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <span className="text-gray-500 sm:text-sm">$</span>
         </div>
         <input
           type="text"
-          className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 
+            focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
           placeholder="0"
           value={formData.salarioBruto ? formData.salarioBruto.toLocaleString('es-CL') : ''}
           onChange={(e) => {
             const value = e.target.value.replace(/\D/g, '');
-            setFormData({ 
-              ...formData, 
-              salarioBruto: value ? parseInt(value) : 0 
-            });
+            if (value.length <= 7) {
+              setFormData({ 
+                ...formData, 
+                salarioBruto: value ? parseInt(value) : 0 
+              });
+            }
           }}
           required
         />
@@ -202,7 +217,8 @@ export const questions = [
         </div>
       </div>
     ),
-    isValid: (formData: PensionFormData) => formData.salarioBruto > 0
+    isValid: (formData: PensionFormData) => formData.salarioBruto > 0 && 
+                                          formData.salarioBruto.toString().length <= 7
   },
   {
     title: "Si te retiraras hoy, ¿cuál sería tu monto ideal de pensión mensual?",
@@ -214,7 +230,7 @@ export const questions = [
               Indica el monto mensual que consideras necesario para mantener tu calidad de vida actual.
             </li>
             <li className="text-sm text-gray-600">
-              Te recomendamos ser lo más realista posible, considera que varios de los gastos que tienes hoy no los tendrás al momento de tu jubilación.
+              Te recomendamos ser lo más realista posible.
             </li>
           </ul>
         </div>
@@ -224,15 +240,18 @@ export const questions = [
           </div>
           <input
             type="text"
-            className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+            inputMode="numeric"
+            className="block w-full pl-7 pr-12 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border"
             placeholder="0"
             value={formData.pensionIdeal ? formData.pensionIdeal.toLocaleString('es-CL') : ''}
             onChange={(e) => {
               const value = e.target.value.replace(/\D/g, '');
-              setFormData({ 
-                ...formData, 
-                pensionIdeal: value ? parseInt(value) : 0 
-              });
+              if (value.length <= 7) {
+                setFormData({ 
+                  ...formData, 
+                  pensionIdeal: value ? parseInt(value) : 0 
+                });
+              }
             }}
             required
           />
@@ -242,14 +261,15 @@ export const questions = [
         </div>
       </div>
     ),
-    isValid: (formData: PensionFormData) => formData.pensionIdeal > 0
+    isValid: (formData: PensionFormData) => formData.pensionIdeal > 0 && 
+                                          formData.pensionIdeal.toString().length <= 7
   },
   {
     title: "¿Cuál es tu nivel de estudios?",
     component: (formData: PensionFormData, setFormData: React.Dispatch<React.SetStateAction<PensionFormData>>) => (
       <div className="space-y-4">
-        <div>
-          <label htmlFor="nivelEstudios" className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="mb-8 sm:mb-12">
+          <label htmlFor="nivelEstudios" className="block text-sm font-medium text-gray-700 mb-3">
             Selecciona tu nivel de estudios
           </label>
           <select
@@ -257,19 +277,21 @@ export const questions = [
             value={formData.nivelEstudios}
             onChange={(e) => setFormData({ ...formData, nivelEstudios: e.target.value })}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 
-              focus:ring-indigo-500 p-2 border text-xs sm:text-sm md:text-base bg-white"
+              focus:ring-indigo-500 text-base sm:text-lg lg:text-base p-2 border bg-white"
             required
           >
-            <option value="" className="text-xs sm:text-sm md:text-base">Selecciona una opción</option>
+            <option value="" className="text-base sm:text-lg lg:text-base">
+              Selecciona una opción
+            </option>
             {[
-              'Básica',
-              'Media',
-              'Técnica',
-              'Universitaria incompleta',
+              'Postgrado',
               'Universitaria completa',
-              'Postgrado'
+              'Universitaria incompleta',
+              'Técnica',
+              'Media',
+              'Básica'
             ].map((level) => (
-              <option key={level} value={level} className="text-xs sm:text-sm md:text-base">
+              <option key={level} value={level} className="text-base sm:text-lg lg:text-base">
                 {level}
               </option>
             ))}
